@@ -184,8 +184,8 @@ dependencies {
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
 
     compileOnly( fg.deobf("curse.maven:oculus-581495:4578744"))
-    //compileOnly( fg.deobf("curse.maven:embeddium-908741:5067973"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
-    compileOnly( fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"))
+    compileOnly( fg.deobf("curse.maven:embeddium-908741:5067973"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
+    //compileOnly( fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"))
     compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
     compileOnly( fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge"))
 
@@ -198,8 +198,8 @@ dependencies {
 
     //COMMENTOUT when running in server//
     runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
-    //runtimeOnly "curse.maven:embeddium-908741:5067973"
-    runtimeOnly fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2")
+    runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
+    //runtimeOnly fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2")
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
