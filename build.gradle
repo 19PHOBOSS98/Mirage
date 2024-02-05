@@ -8,6 +8,7 @@ buildscript {
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath 'org.parchmentmc:librarian:1.+'
+        classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
@@ -15,10 +16,11 @@ plugins {
     id 'eclipse'
     id 'maven-publish'
     //id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    //id 'org.spongepowered.mixin' version '0.7.+'
 }
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
-
+apply plugin: 'org.spongepowered.mixin'
 
 version = '0.0.1-1.18.2'
 group = 'net.phoboss.mirage' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
@@ -177,36 +179,33 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
 
     compileOnly( fg.deobf("curse.maven:oculus-581495:4578744"))
+    //compileOnly( fg.deobf("curse.maven:embeddium-908741:5067973"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
     compileOnly( fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"))
     compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
     compileOnly( fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge"))
 
-    runtimeOnly "curse.maven:framedblocks-441647:4567924"
-    runtimeOnly "net.phoboss:decobeacon:0.0.1-1.18.2-Forge"
+    runtimeOnly fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge")
+    runtimeOnly fg.deobf("curse.maven:architectury-api-419699:4521465")
+
+    runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
 
     runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 
     //COMMENTOUT when running in server//
-    runtimeOnly "curse.maven:oculus-581495:4578744"
-    runtimeOnly "orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"
-    runtimeOnly "curse.maven:minemaresurection-596719:3831181"
-    runtimeOnly "curse.maven:cmdcam-251244:4426920"
-    runtimeOnly "curse.maven:creativecore-257814:4629846"
-    // Real mod deobf dependency examples - these get remapped to your current mappings
-    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
-    // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}") // Adds the full JEI mod as a runtime dependency
-    // implementation fg.deobf("com.tterrag.registrate:Registrate:MC${mc_version}-${registrate_version}") // Adds registrate as a dependency
+    runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
+    //runtimeOnly "curse.maven:embeddium-908741:5067973"
+    runtimeOnly fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2")
 
-    // Examples using mod jars from ./libs
-    // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
+    runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
+    runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
+    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")
+    //runtimeOnly "maven.modrinth:lhGA9TYQ:o069zrDa"//https://modrinth.com/mod/architectury-api/version/4.11.93+forge
 
-    // For more info...
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
