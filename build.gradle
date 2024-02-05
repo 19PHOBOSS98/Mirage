@@ -2,22 +2,26 @@ buildscript {
     repositories {
         // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
         maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 plugins {
     id 'eclipse'
     id 'maven-publish'
+    //id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
 
 version = '0.0.1-1.18.2'
-group = 'com.phoboss.mirage' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = 'net.phoboss.mirage' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mirage'
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
@@ -38,7 +42,7 @@ minecraft {
     //
     // Use non-default mappings at your own risk. They may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'official', version: '1.18.2'
+    mappings channel: 'parchment', version: '2022.08.07-1.18.2'
 
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
@@ -141,10 +145,31 @@ repositories {
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
-    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
-    // flatDir {
-    //     dir 'libs'
-    // }
+    flatDir {
+        dirs 'libs'
+    }
+
+    maven {
+        url = "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+    maven {
+        name = 'GeckoLib'
+        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+    }
 }
 
 dependencies {
@@ -153,6 +178,24 @@ dependencies {
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
 
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
+
+    compileOnly( fg.deobf("curse.maven:oculus-581495:4578744"))
+    compileOnly( fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"))
+    compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
+    compileOnly( fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge"))
+
+    runtimeOnly "curse.maven:framedblocks-441647:4567924"
+    runtimeOnly "net.phoboss:decobeacon:0.0.1-1.18.2-Forge"
+
+    runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
+
+    //COMMENTOUT when running in server//
+    runtimeOnly "curse.maven:oculus-581495:4578744"
+    runtimeOnly "orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"
+    runtimeOnly "curse.maven:minemaresurection-596719:3831181"
+    runtimeOnly "curse.maven:cmdcam-251244:4426920"
+    runtimeOnly "curse.maven:creativecore-257814:4629846"
     // Real mod deobf dependency examples - these get remapped to your current mappings
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
     // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}") // Adds the full JEI mod as a runtime dependency
