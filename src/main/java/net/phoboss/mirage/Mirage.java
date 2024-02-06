@@ -7,8 +7,11 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -59,6 +62,13 @@ public class Mirage
         initSchematicsFolder();
     }
 
+    @Mod.EventBusSubscriber(modid = Mirage.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public class ModEventClientBusEvents {
+        @SubscribeEvent
+        public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event){
+            ModRendering.registerBlockEntityRenderers(event);
+        }
+    }
 
     public static void initFolder(Path path){
         try {
