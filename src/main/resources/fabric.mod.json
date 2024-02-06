@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
 			"net.phoboss.mirage.Mirage"
+		],
+		"client": [
+			"net.phoboss.mirage.MirageClient"
 		]
 	},
 	"mixins": [
