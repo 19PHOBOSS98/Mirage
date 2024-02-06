@@ -25,21 +25,6 @@ import java.util.function.Supplier;
 public class ModBlocks {
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS,Mirage.MOD_ID);
 
-    /*public static final RegistryObject<Block> MIRAGE_BLOCK = ModBlocks.registerBlock(
-            "mirage_block",
-            () -> new MirageBlock(BlockBehaviour
-                    .Properties.of(Material.GLASS, MaterialColor.DIAMOND)
-                    .noOcclusion()
-                    .noCollission()
-                    .lightLevel((state) -> state.getValue(BlockStateProperties.LIT) ? 15 : 0)),
-            ModItemGroups.MIRAGE
-            //new ModBlocks.ExtraItemSettings()
-                    //.setStackLimit(1)
-                    //.setTooltipKey("block.mirage.omni_beacon.tooltip")
-                    //.setTooltipShiftKey("block.mirage.omni_beacon.tooltip.shift")
-    );*/
-
-
     public static final RegistryObject<Block> MIRAGE_BLOCK = ModBlocks.registerBlockWithoutItem(
             "mirage_block",
             () -> new MirageBlock(BlockBehaviour

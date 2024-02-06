@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.phys.AABB;
+import net.minecraftforge.common.extensions.IForgeBlockEntity;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.client.rendering.customworld.MirageStructure;
@@ -40,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MirageBlockEntity extends BlockEntity implements IAnimatable {
+public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForgeBlockEntity {
     public MirageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MIRAGE_BLOCK.get(), pos, state);
         setBookSettingsPOJO(new MirageProjectorBook());
@@ -467,6 +469,12 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         return this.animationFactory;
     }
 
+    @Override
+    public AABB getRenderBoundingBox() {
+        BlockPos pos = this.getBlockPos();
+        Vec3i offset = new Vec3i(512,512,512);
+        return new AABB(pos.subtract(offset),pos.offset(offset));
+    }
 }
 
 
