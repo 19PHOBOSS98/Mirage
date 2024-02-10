@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public class ModBlockEntities {
 
-    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES,Mirage.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES,Mirage.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<MirageBlockEntity>> MIRAGE_BLOCK = registerBlockEntities("mirage_block",
             () ->   BlockEntityType.Builder.of(

@@ -2,9 +2,9 @@ package net.phoboss.mirage.client.rendering.customworld;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
 import net.irisshaders.iris.api.v0.IrisApi;
 import net.minecraft.client.Minecraft;
@@ -15,17 +15,16 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -53,34 +52,34 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraftforge.client.ChunkRenderTypeSet;
+import net.minecraftforge.client.RenderTypeHelper;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.fml.ModList;
-import net.phoboss.decobeacon.blocks.decobeacon.DecoBeaconBlock;
+import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import org.jetbrains.annotations.Nullable;
 import xfacthd.framedblocks.api.block.FramedBlockEntity;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 public class MirageWorld extends Level implements ServerLevelAccessor {
     public MirageWorld(Level level) {
-        super((WritableLevelData) level.getLevelData(),
+        super(
+                (WritableLevelData) level.getLevelData(),
                 level.dimension(),
                 level.dimensionTypeRegistration(),
                 level::getProfiler,
                 level.isClientSide(),
                 level.isDebug(),
-                0);
+                0,
+                1000000000);
+
         this.level = level;
         this.mirageBlockEntityTickers = new ObjectArrayList<>();
         this.animatedSprites = new ObjectArrayList<>();
@@ -183,7 +182,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             BlockPos fakeBlockPos = BlockPos.of(key);
             BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
             matrices.translate(relativePos.getX(),relativePos.getY(),relativePos.getZ());
-            renderMirageBlock(block.blockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom());
+            renderMirageBlock(block.blockState, fakeBlockPos, this, matrices, vertexConsumers, true,getRandom());
             matrices.popPose();
         });
 
@@ -196,15 +195,14 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             matrices.popPose();
         });
 
-        PoseStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.pushPose();
-        matrixStack.mulPoseMatrix(matrices.last().pose());
+        Matrix4f matrixView = RenderSystem.getModelViewMatrix().copy();
+        matrixView.multiply(matrices.last().pose().copy());
         this.mirageBufferStorage.mirageVertexBuffers.forEach((renderLayer,vertexBuffer)->{
             renderLayer.setupRenderState();
-            vertexBuffer.drawWithShader(matrixStack.last().pose(), RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
+            vertexBuffer.bind();
+            vertexBuffer.drawWithShader(matrixView, RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
             renderLayer.clearRenderState();
         });
-        matrixStack.popPose();
 
         markAnimatedSprite(this.animatedSprites);
     }
@@ -239,7 +237,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
             if (fakeBlockEntity != null) {
                 if(shouldRenderModelData(fakeBlockEntity)) {
-                    renderMirageModelData(fakeBlockState, fakeBlockPos, this, true, getRandom(), fakeBlockEntity, matrices, vertexConsumers);
+                    ModelData modelData = fakeBlockEntity.getModelData();
+                    renderMirageModelData(fakeBlockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom(),modelData);
                     matrices.popPose();
                     return;
                 }
@@ -282,27 +281,17 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             SpriteUtil.markSpriteActive(sprite);
         });
     }
-    public static TextureAtlasSprite getStillTexture(@Nullable Level level, @Nullable BlockPos pos, FluidState state) {
-        if (state.getType() == Fluids.EMPTY) return null;
-        ResourceLocation texture = state.getType().getAttributes().getStillTexture(level, pos);
-        return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
-    }
-    public static TextureAtlasSprite getFlowingTexture(@Nullable Level level, @Nullable BlockPos pos, FluidState state) {
-        if (state.getType() == Fluids.EMPTY) return null;
-        ResourceLocation texture = state.getType().getAttributes().getFlowingTexture(level, pos);
-        return Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(texture);
-    }
+
     public static void addFluidToAnimatedSprites(Level world, BlockPos blockPos, FluidState fluidState, ObjectArrayList<TextureAtlasSprite> animatedSprites){
-        TextureAtlasSprite stillSprite = getStillTexture(world, blockPos, fluidState);
-        if(stillSprite!=null && stillSprite.getAnimationTicker()!=null) {
-            if(!animatedSprites.contains(stillSprite)) {
-                animatedSprites.add(stillSprite);
+        TextureAtlasSprite[] fluidSprites = net.minecraftforge.client.ForgeHooksClient.getFluidSprites(world, blockPos, fluidState);
+        for(TextureAtlasSprite sprite : fluidSprites){
+            if(sprite == null){
+                continue;
             }
-        }
-        TextureAtlasSprite flowingSprite = getFlowingTexture(world, blockPos, fluidState);
-        if(flowingSprite!=null && flowingSprite.getAnimationTicker()!=null) {
-            if(!animatedSprites.contains(flowingSprite)) {
-                animatedSprites.add(flowingSprite);
+            if(sprite.getAnimationTicker()!=null) {
+                if(!animatedSprites.contains(sprite)) {
+                    animatedSprites.add(sprite);
+                }
             }
         }
     }
@@ -317,7 +306,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             }
         }
     }
-    public void addToAnimatedSprites(BlockState blockState,Random random){
+    public void addToAnimatedSprites(BlockState blockState,RandomSource random){
         if(blockState == null){
             return;
         }
@@ -337,12 +326,20 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
     //WIP Embeddium compat
 
+    public static boolean canRenderInLayer(BlockState state, RenderType type) {
+        for(RenderType renderType : blockRenderManager.getBlockModel(state).getRenderTypes(state,RandomSource.create(),net.minecraftforge.client.model.data.ModelData.EMPTY)) {
+            if (renderType == type) {
+                return true;
+            }
+        }
+        return false;
+    }
     public static boolean isOnTranslucentRenderLayer(BlockState blockState){
-        return ItemBlockRenderTypes.canRenderInLayer(blockState,RenderType.translucent());
+        return canRenderInLayer(blockState,RenderType.translucent());
     }
 
     public static boolean addToManualBlockRenderList(long blockPosKey, StateNEntity stateNEntity, Long2ObjectOpenHashMap<StateNEntity> manualRenderBlocks){
-        if(ModList.get().isLoaded("decobeacon")) {
+        if(ModList.get().isLoaded("decobeacons")) {
             if (stateNEntity.blockState.getBlock() instanceof DecoBeaconBlock) {
                 manualRenderBlocks.put(blockPosKey, stateNEntity);
                 return true;
@@ -459,10 +456,19 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     public static void renderMirageEntity(Entity entity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers){
         entityRenderDispatcher.render(entity, 0, 0, 0, entity.getYRot(), tickDelta, matrices, vertexConsumers, entityRenderDispatcher.getPackedLightCoords(entity, tickDelta));
     }
-    public static void renderMirageBlock(BlockState state, BlockPos referencePos, BlockAndTintGetter world, PoseStack matrices, MultiBufferSource vertexConsumerProvider, boolean cull, Random random){
-        RenderType rl = ItemBlockRenderTypes.getRenderType(state,true);
-        blockRenderManager.renderBatched(state,referencePos,world,matrices,
-                vertexConsumerProvider.getBuffer(rl),cull,random);
+    public static void renderMirageBlock(BlockState state, BlockPos referencePos, BlockAndTintGetter world, PoseStack matrices, MultiBufferSource vertexConsumerProvider, boolean cull,RandomSource random){
+        blockRenderManager.getBlockModel(state).getRenderTypes(state,RandomSource.create(),net.minecraftforge.client.model.data.ModelData.EMPTY).forEach((renderType)->{
+            RenderType rl = RenderTypeHelper.getEntityRenderType(renderType,true);
+            blockRenderManager.renderBatched(state,referencePos,world,matrices,
+                    vertexConsumerProvider.getBuffer(rl),cull, random);
+        });
+
+    }
+    //this method is mostly used specifically for the FramedBlocks mod
+    public static void renderMirageModelData(BlockState state, BlockPos referencePos, BlockAndTintGetter world, PoseStack matrices, MultiBufferSource vertexConsumerProvider, boolean cull, RandomSource random, ModelData modelData){
+        blockRenderManager.getBlockModel(state).getRenderTypes(state,RandomSource.create(),modelData).forEach((renderType)->{
+            blockRenderManager.renderBatched(state,referencePos,world,matrices,vertexConsumerProvider.getBuffer(renderType),cull,random,modelData,renderType);
+        });
     }
     public static void renderMirageFluid(BlockState state, FluidState fluidState, BlockPos referencePos, BlockAndTintGetter world, MultiBufferSource vertexConsumerProvider){
         RenderType rl = ItemBlockRenderTypes.getRenderLayer(fluidState);
@@ -470,18 +476,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
 
-    public static void renderMirageModelData(BlockState state, BlockPos referencePos, BlockAndTintGetter world, boolean cull, Random random, BlockEntity blockEntity, PoseStack matrices, MultiBufferSource vertexConsumerProvider){
-        IModelData modelData = blockEntity.getModelData();
 
-        for (RenderType renderLayer : RenderType.chunkBufferLayers()) {
-            if (ItemBlockRenderTypes.canRenderInLayer(state, renderLayer)) {
-                ForgeHooksClient.setRenderType(renderLayer);
-                blockRenderManager.renderBatched(state,referencePos,world,matrices,vertexConsumerProvider.getBuffer(renderLayer),cull,random,modelData);
-            }
-        }
-
-        ForgeHooksClient.setRenderType(null);
-    }
 
     public void resetWorldForBlockEntities(){
         this.mirageStateNEntities.forEach((key,entry)->{
@@ -607,6 +602,16 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             }
         }
         return Blocks.AIR.defaultBlockState().getFluidState();
+    }
+
+    @Override
+    public void playSeededSound(@Nullable Player p_220363_, double p_220364_, double p_220365_, double p_220366_, SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {
+
+    }
+
+    @Override
+    public void playSeededSound(@Nullable Player p_220372_, Entity p_220373_, SoundEvent p_220374_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_) {
+
     }
 
     @Override
@@ -787,6 +792,11 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
     @Override
     public void levelEvent(@Nullable Player pPlayer, int pType, BlockPos pPos, int pData) {
+
+    }
+
+    @Override
+    public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, GameEvent.Context p_220406_) {
 
     }
 

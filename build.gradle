@@ -22,7 +22,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.0.1-1.18.2'
+version = '0.0.1-1.19.2-forge'
 group = 'net.phoboss.mirage' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mirage'
 
@@ -44,7 +44,8 @@ minecraft {
     //
     // Use non-default mappings at your own risk. They may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
-    mappings channel: 'parchment', version: '2022.08.07-1.18.2'
+    //mappings channel: 'parchment', version: '2022.08.07-1.18.2'
+    mappings channel: 'parchment', version: '1.18.2-2022.08.07-1.19.2'
 
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
@@ -178,34 +179,32 @@ dependencies {
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
+    //minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
+    minecraft 'net.minecraftforge:forge:1.19.2-43.3.0'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
-    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
+    //implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.19:3.1.40')
 
-    compileOnly( fg.deobf("curse.maven:oculus-581495:4578744"))
-    compileOnly( fg.deobf("curse.maven:embeddium-908741:5067973"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
-    //compileOnly( fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"))
-    compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
-    compileOnly( fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge"))
+    compileOnly( fg.deobf("curse.maven:oculus-581495:4763262"))
+    compileOnly( fg.deobf("curse.maven:embeddium-908741:5067978"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
 
-    runtimeOnly fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge")
-    runtimeOnly fg.deobf("curse.maven:architectury-api-419699:4521465")
 
-    runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
+    compileOnly( fg.deobf("curse.maven:framedblocks-441647:4762544"))
+    compileOnly( fg.deobf("net.phoboss:decobeacons:0.0.1-1.19.2-Forge"))
 
-    runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
+    runtimeOnly fg.deobf("net.phoboss:decobeacons:0.0.1-1.19.2-Forge")
+    runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4762544")
+
+    //runtimeOnly "maven.modrinth:c7m1mi73:eLvhoAZV"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 
     //COMMENTOUT when running in server//
-    runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
-    runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
-    //runtimeOnly fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2")
+    runtimeOnly fg.deobf("curse.maven:oculus-581495:4763262")
+    runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067978")
 
-    runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
-    runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
-    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")
-    //runtimeOnly "maven.modrinth:lhGA9TYQ:o069zrDa"//https://modrinth.com/mod/architectury-api/version/4.11.93+forge
-
+    runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3906386")
+    runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4062727")
+    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4584615")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
