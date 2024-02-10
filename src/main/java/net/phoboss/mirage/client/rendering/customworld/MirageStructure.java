@@ -7,8 +7,9 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.structure.Structure;
+
 import net.minecraft.structure.StructurePlacementData;
+import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockBox;
@@ -22,9 +23,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Random;
 
-public class MirageStructure extends Structure {
+public class MirageStructure extends StructureTemplate {
 
-    private final List<StructureEntityInfo> mirageEntities = Lists.newArrayList();
+    private final List<StructureTemplate.StructureEntityInfo> mirageEntities = Lists.newArrayList();
 
     public MirageStructure() {
         super();
@@ -47,8 +48,9 @@ public class MirageStructure extends Structure {
         }
     }
 
+
     @Override
-    public boolean place(ServerWorldAccess world, BlockPos pos, BlockPos pivot, StructurePlacementData placementData, Random random, int flags) {
+    public boolean place(ServerWorldAccess world, BlockPos pos, BlockPos pivot, StructurePlacementData placementData, net.minecraft.util.math.random.Random random, int flags) {
         boolean result =  super.place(world, pos, pivot, placementData, random, flags);
 
         if (!placementData.shouldIgnoreEntities()) {

@@ -47,23 +47,22 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation 'software.bernie.geckolib:geckolib-fabric-1.18:3.0.80'
+	modImplementation 'software.bernie.geckolib:geckolib-fabric-1.19:3.1.40'
 
 	implementation 'org.joml:joml:1.10.5'
 	implementation "io.github.douira:glsl-transformer:2.0.0"
 	implementation "org.anarres:jcpp:1.4.14"
-	modRuntimeOnly "maven.modrinth:iris:1.6.11+1.18.2"
+	modRuntimeOnly "maven.modrinth:iris:1.6.11+1.19.2"
 
-	modCompileOnlyApi "maven.modrinth:YL57xq9U:ogIRhnAJ" //https://modrinth.com/mod/iris/version/1.6.11+1.18.2
-	modCompileOnlyApi "maven.modrinth:AANobbMI:74Y5Z8fo" //https://modrinth.com/mod/sodium/version/mc1.18.2-0.4.1
+	modCompileOnlyApi "maven.modrinth:iris:1.6.11+1.19.2" //https://modrinth.com/mod/iris/version/1.6.11+1.18.2
+	modCompileOnlyApi "maven.modrinth:sodium:mc1.18.2-0.4.1" //https://modrinth.com/mod/sodium/version/mc1.18.2-0.4.1
 
-	modCompileOnlyApi "net.phoboss:decobeacon:0.0.1-1.18.2-Fabric"
-	modRuntimeOnly "net.phoboss:decobeacon:0.0.1-1.18.2-Fabric"
-	modRuntimeOnly "curse.maven:architectury-api-419699:4521464"
+	modCompileOnlyApi "net.phoboss:decobeacons:0.0.1-1.19.2-Fabric"
+	modRuntimeOnly "net.phoboss:decobeacons:0.0.1-1.19.2-Fabric"
 
-	modRuntimeOnly "maven.modrinth:nELKzJ5C:RbIlcuU7" //https://modrinth.com/mod/open-simple-frames/version/RbIlcuU7
+	modRuntimeOnly "maven.modrinth:nELKzJ5C:Kx0HSnnF" //https://modrinth.com/mod/open-simple-frames/version/RbIlcuU7
 
-	modRuntimeOnly "maven.modrinth:mOgUt4GM:nVxObSbX" //https://modrinth.com/mod/modmenu/version/3.2.5
+	modRuntimeOnly "maven.modrinth:mOgUt4GM:gSoPJyVn" //https://modrinth.com/mod/modmenu/version/3.2.5
 
 }
 

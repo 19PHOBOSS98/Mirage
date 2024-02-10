@@ -59,11 +59,11 @@ public class MirageBufferStorage {
     public void uploadBufferBuildersToVertexBuffers(MirageImmediate mirageImmediate) {
         mirageImmediate.getLayerBuffers().forEach((renderLayer,bufferBuilder)->{
             if(bufferBuilder.isBuilding()){
-                bufferBuilder.end();
                 if(!this.mirageVertexBuffers.containsKey(renderLayer)){
                     this.mirageVertexBuffers.put(renderLayer, new VertexBuffer());
                 }
-                this.mirageVertexBuffers.get(renderLayer).upload(bufferBuilder);
+                this.mirageVertexBuffers.get(renderLayer).bind();
+                this.mirageVertexBuffers.get(renderLayer).upload(bufferBuilder.end());
             }
         });
 

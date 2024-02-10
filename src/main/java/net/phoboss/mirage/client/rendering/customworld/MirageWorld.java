@@ -43,7 +43,9 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.*;
@@ -55,22 +57,23 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.tick.QueryableTickScheduler;
-import net.phoboss.decobeacon.blocks.decobeacon.DecoBeaconBlock;
+import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
+
 
 public class MirageWorld extends World implements ServerWorldAccess {
     public MirageWorld(World world) {
         super((MutableWorldProperties) world.getLevelProperties(),
                 world.getRegistryKey(),
-                world.method_40134(),
+                world.getDimensionEntry(),
                 world::getProfiler,
                 world.isClient(),
                 world.isDebugWorld(),
-                0);
+                0,
+                10000000);
         this.world = world;
         this.mirageBlockEntityTickers = new ObjectArrayList<>();
         this.animatedSprites = new ObjectArrayList<>();
@@ -187,15 +190,14 @@ public class MirageWorld extends World implements ServerWorldAccess {
             matrices.pop();
         });
 
-        MatrixStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.push();
-        matrixStack.multiplyPositionMatrix(matrices.peek().getPositionMatrix());
+        Matrix4f matrixView = RenderSystem.getModelViewMatrix().copy();
+        matrixView.multiply(matrices.peek().getPositionMatrix().copy());
         this.mirageBufferStorage.mirageVertexBuffers.forEach((renderLayer,vertexBuffer)->{
             renderLayer.startDrawing();
-            vertexBuffer.setShader(matrixStack.peek().getPositionMatrix(), RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
+            vertexBuffer.bind();
+            vertexBuffer.draw(matrixView, RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
             renderLayer.endDrawing();
         });
-        matrixStack.pop();
 
         markAnimatedSprite(this.animatedSprites);
     }
@@ -337,7 +339,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public static boolean addToManualBlockRenderList(long blockPosKey, StateNEntity stateNEntity, Long2ObjectOpenHashMap<StateNEntity> manualRenderBlocks){
-        if(FabricLoader.getInstance().isModLoaded("decobeacon")) {
+        if(FabricLoader.getInstance().isModLoaded("decobeacons")) {
             if (stateNEntity.blockState.getBlock() instanceof DecoBeaconBlock) {
                 manualRenderBlocks.put(blockPosKey, stateNEntity);
                 return true;
@@ -594,6 +596,16 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     @Override
+    public void playSound(@Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+
+    }
+
+    @Override
+    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+
+    }
+
+    @Override
     public ServerWorld toServerWorld() {
         if (this.world instanceof ServerWorld) {
             return (ServerWorld) this.world;
@@ -773,6 +785,11 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
     @Override
     public void syncWorldEvent(@Nullable PlayerEntity player, int eventId, BlockPos pos, int data) {
+
+    }
+
+    @Override
+    public void emitGameEvent(GameEvent event, Vec3d emitterPos, GameEvent.Emitter emitter) {
 
     }
 

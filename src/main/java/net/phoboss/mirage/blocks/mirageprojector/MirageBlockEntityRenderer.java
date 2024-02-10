@@ -78,6 +78,6 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
     @Override
     public RenderLayer getRenderType(MirageBlockEntity animatable, float partialTick, MatrixStack poseStack, VertexConsumerProvider bufferSource, VertexConsumer buffer, int packedLight, Identifier texture) {
-        return RenderLayer.getEntityTranslucent(getTextureLocation(animatable));
+        return RenderLayer.getEntityTranslucent(getTextureResource(animatable));
     }
 }
