@@ -1,6 +1,7 @@
 package net.phoboss.mirage.client.rendering.customworld;
 
 import com.google.common.collect.Lists;
+import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.mob.MobEntity;
@@ -8,6 +9,9 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtDouble;
 import net.minecraft.nbt.NbtList;
 
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryEntryLookup;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.structure.StructurePlacementData;
 import net.minecraft.structure.StructureTemplate;
 import net.minecraft.util.BlockMirror;
@@ -25,15 +29,18 @@ import java.util.Random;
 
 public class MirageStructure extends StructureTemplate {
 
-    private final List<StructureTemplate.StructureEntityInfo> mirageEntities = Lists.newArrayList();
+    private final List<StructureEntityInfo> mirageEntities = Lists.newArrayList();
 
     public MirageStructure() {
         super();
     }
 
-    @Override
     public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
+        readNbt(Registries.BLOCK.getReadOnlyWrapper(), nbt);
+    }
+    @Override
+    public void readNbt(RegistryEntryLookup<Block> blockLookup, NbtCompound nbt) {
+        super.readNbt(blockLookup, nbt);
         NbtList entitiesNbt = nbt.getList("entities", 10);
         for(int j = 0; j < entitiesNbt.size(); ++j) {
             NbtCompound compoundtag = entitiesNbt.getCompound(j);
@@ -48,11 +55,30 @@ public class MirageStructure extends StructureTemplate {
         }
     }
 
+    /*@Override
+    public void readNbt(NbtCompound nbt) {
+        super.readNbt(nbt);
+        NbtList entitiesNbt = nbt.getList("entities", 10);
+        for(int j = 0; j < entitiesNbt.size(); ++j) {
+            NbtCompound compoundtag = entitiesNbt.getCompound(j);
+            NbtList listtag3 = compoundtag.getList("pos", 6);
+            Vec3d vec3 = new Vec3d(listtag3.getDouble(0), listtag3.getDouble(1), listtag3.getDouble(2));
+            NbtList listtag4 = compoundtag.getList("blockPos", 3);
+            BlockPos blockpos = new BlockPos(listtag4.getInt(0), listtag4.getInt(1), listtag4.getInt(2));
+            if (compoundtag.contains("nbt")) {
+                NbtCompound compoundtag1 = compoundtag.getCompound("nbt");
+                this.mirageEntities.add(new StructureEntityInfo(vec3, blockpos, compoundtag1));
+            }
+        }
+    }*/
+
 
     @Override
     public boolean place(ServerWorldAccess world, BlockPos pos, BlockPos pivot, StructurePlacementData placementData, net.minecraft.util.math.random.Random random, int flags) {
+        boolean ignoreEntities = placementData.shouldIgnoreEntities();
+        placementData.setIgnoreEntities(true);
         boolean result =  super.place(world, pos, pivot, placementData, random, flags);
-
+        placementData.setIgnoreEntities(ignoreEntities);
         if (!placementData.shouldIgnoreEntities()) {
             spawnEntities((World)world, pos,placementData.getMirror(),placementData.getRotation(),placementData.getPosition(),placementData.getBoundingBox(), placementData.shouldInitializeMobs());
         }

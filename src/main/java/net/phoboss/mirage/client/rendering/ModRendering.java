@@ -1,14 +1,11 @@
 package net.phoboss.mirage.client.rendering;
 
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntityRenderer;
-import net.phoboss.mirage.items.ModItems;
-import net.phoboss.mirage.items.mirageprojector.MirageBlockItemRenderer;
-import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
 
 
 public class ModRendering {
@@ -18,8 +15,8 @@ public class ModRendering {
     }
 
     public static void registerBlockEntityRenderers() {
-        BlockEntityRendererRegistry.register(ModBlockEntities.MIRAGE_BLOCK, MirageBlockEntityRenderer::new);
-        GeoItemRenderer.registerItemRenderer(ModItems.MIRAGE_BLOCK_ITEM, new MirageBlockItemRenderer());
+        BlockEntityRendererFactories.register(ModBlockEntities.MIRAGE_BLOCK, MirageBlockEntityRenderer::new);
+
     }
 
     public static void registerAll() {

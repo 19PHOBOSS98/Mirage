@@ -9,21 +9,22 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
-import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoBlockRenderer;
+
 
 import java.util.List;
 
 
-public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntity>{
+public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntity> {
     public MirageBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
         super(new MirageBlockModel());
     }
 
+
     @Override
-    public void render(MirageBlockEntity blockEntity, float tickDelta, MatrixStack matrices,VertexConsumerProvider vertexConsumers, int light) {
-        super.render(blockEntity, tickDelta, matrices, vertexConsumers, light);
-
-
+    public void renderFinal(MatrixStack poseStack, MirageBlockEntity blockEntity, BakedGeoModel model, VertexConsumerProvider bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        super.renderFinal(poseStack, blockEntity, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
         boolean isTopPowered = blockEntity.isTopPowered();
         boolean isPowered = blockEntity.isPowered();
         blockEntity.setReverse(blockEntity.areSidesPowered());
@@ -54,7 +55,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
             if (mirageWorld != null) {
                 BlockPos projectorPos = blockEntity.getPos();
-                mirageWorld.render(projectorPos, tickDelta, matrices, vertexConsumers, light, 0);
+                mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
             }
         }
         blockEntity.savePreviousTopPowerState(isTopPowered);
@@ -67,17 +68,13 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
     }
 
     @Override
-    public boolean rendersOutsideBoundingBox(BlockEntity blockEntity) {
-        return true;
-    }
-
-    /*@Override
     public boolean rendersOutsideBoundingBox(MirageBlockEntity blockEntity) {
         return true;
-    }*/
+    }
 
     @Override
-    public RenderLayer getRenderType(MirageBlockEntity animatable, float partialTick, MatrixStack poseStack, VertexConsumerProvider bufferSource, VertexConsumer buffer, int packedLight, Identifier texture) {
-        return RenderLayer.getEntityTranslucent(getTextureResource(animatable));
+    public RenderLayer getRenderType(MirageBlockEntity animatable, Identifier texture, VertexConsumerProvider bufferSource, float partialTick) {
+        return RenderLayer.getEntityTranslucent(getGeoModel().getTextureResource(animatable));
     }
+
 }

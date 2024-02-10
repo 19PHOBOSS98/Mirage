@@ -6,14 +6,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.loader.api.FabricLoader;
+
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
+import net.phoboss.mirage.items.ModItemGroups;
 import net.phoboss.mirage.items.ModItems;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.bernie.geckolib3.GeckoLib;
+import software.bernie.geckolib.GeckoLib;
+
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -35,6 +37,7 @@ public class Mirage implements ModInitializer {
 		initConfigFile();
 		initSchematicsFolder();
 
+		ModItemGroups.registerAll();
 		ModBlocks.registerAll();
 		ModBlockEntities.registerAll();
 		ModItems.registerAll();

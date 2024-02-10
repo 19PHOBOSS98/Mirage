@@ -1,20 +1,23 @@
 package net.phoboss.mirage.items.mirageprojector;
 
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.renderers.geo.GeoItemRenderer;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
+import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 public class MirageBlockItemRenderer extends GeoItemRenderer<MirageBlockItem> {
     public MirageBlockItemRenderer() {
         super(new MirageBlockItemModel());
     }
 
-    @Override
+
+    /*@Override
     public RenderLayer getRenderType(MirageBlockItem animatable, float partialTick, MatrixStack poseStack, @Nullable VertexConsumerProvider bufferSource, @Nullable VertexConsumer buffer, int packedLight, Identifier texture) {
         return RenderLayer.getEntityTranslucent(getTextureResource(animatable));
+    }*/
+    @Override
+    public RenderLayer getRenderType(MirageBlockItem animatable, Identifier texture, VertexConsumerProvider bufferSource, float partialTick) {
+        return RenderLayer.getEntityTranslucent(getGeoModel().getTextureResource(animatable));
     }
 }

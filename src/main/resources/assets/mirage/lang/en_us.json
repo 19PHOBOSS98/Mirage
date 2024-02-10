@@ -4,5 +4,9 @@
 
   "itemGroup.mirage.mirage": "MIRAGE",
 
-  "invalid_page_entry": "might need to check on what you wrote..."
+  "invalid_page_entry": "might need to check on what you wrote...",
+
+  "block.mirage.item.tooltip": "R-Click With:\n Redstone Torch => Toggle Active-Low\n Soul Torch => Toggle AutoPlay\n Book => Config Projector With Additional Settings",
+  "block.mirage.item.tooltip.shift": "Redstone Inputs:\nBottom Face:on/off\nTop Face:Reverse\n Side Faces:Step Frames(Pause/Play when in AutoPlay mode)"
+
 }

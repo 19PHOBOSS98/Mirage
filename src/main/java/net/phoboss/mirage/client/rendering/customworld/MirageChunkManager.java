@@ -6,6 +6,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ChunkLevelType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.BlockView;
@@ -122,8 +123,13 @@ public class MirageChunkManager extends ChunkManager {
         }
 
         @Override
+        public ChunkLevelType getLevelType() {
+            return ChunkLevelType.FULL;
+        }
+
+        /*@Override
         public ChunkHolder.LevelType getLevelType() {
             return ChunkHolder.LevelType.BORDER;
-        }
+        }*/
     }
 }

@@ -2,9 +2,9 @@ package net.phoboss.mirage.blocks.mirageprojector;
 
 import net.minecraft.util.Identifier;
 import net.phoboss.mirage.Mirage;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
 
-public class MirageBlockModel extends AnimatedGeoModel<MirageBlockEntity> {
+public class MirageBlockModel extends GeoModel<MirageBlockEntity> {
 
     @Override
     public Identifier getModelResource(MirageBlockEntity object) {

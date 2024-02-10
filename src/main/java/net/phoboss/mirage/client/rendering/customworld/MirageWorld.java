@@ -37,37 +37,41 @@ import net.minecraft.item.AirBlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.ColorResolver;
 import net.minecraft.world.biome.source.BiomeAccess;
 import net.minecraft.world.chunk.ChunkManager;
 import net.minecraft.world.chunk.light.LightingProvider;
 import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 import java.util.Iterator;
 import java.util.List;
+
+;
 
 
 public class MirageWorld extends World implements ServerWorldAccess {
     public MirageWorld(World world) {
         super((MutableWorldProperties) world.getLevelProperties(),
                 world.getRegistryKey(),
+                world.getRegistryManager(),
                 world.getDimensionEntry(),
                 world::getProfiler,
                 world.isClient(),
@@ -190,8 +194,12 @@ public class MirageWorld extends World implements ServerWorldAccess {
             matrices.pop();
         });
 
-        Matrix4f matrixView = RenderSystem.getModelViewMatrix().copy();
-        matrixView.multiply(matrices.peek().getPositionMatrix().copy());
+        /*
+        Matrix4f matrixView = RenderSystem.getModelViewMatrix();
+        matrixView.mul(matrices.peek().getPositionMatrix());
+         */
+        Matrix4f matrixView = new Matrix4f(RenderSystem.getModelViewMatrix());
+        matrixView.mul(new Matrix4f(matrices.peek().getPositionMatrix()));
         this.mirageBufferStorage.mirageVertexBuffers.forEach((renderLayer,vertexBuffer)->{
             renderLayer.startDrawing();
             vertexBuffer.bind();
@@ -290,15 +298,20 @@ public class MirageWorld extends World implements ServerWorldAccess {
         if (sprites == null) return null;
         return sprites[0];
     }
+
+    public static boolean isSpriteAnimatable(Sprite sprite){
+        return sprite.getContents().getDistinctFrameCount().count()>1;
+    }
+
     public static void addFluidToAnimatedSprites(World world, BlockPos blockPos, FluidState fluidState, ObjectArrayList<Sprite> animatedSprites){
         Sprite stillSprite = getStillTexture(world, blockPos, fluidState);
-        if(stillSprite!=null && stillSprite.getAnimation()!=null) {
+        if(stillSprite!=null && isSpriteAnimatable(stillSprite)) {
             if(!animatedSprites.contains(stillSprite)) {
                 animatedSprites.add(stillSprite);
             }
         }
         Sprite flowingSprite = getFlowingTexture(world, blockPos, fluidState);
-        if(flowingSprite!=null && flowingSprite.getAnimation()!=null) {
+        if(flowingSprite!=null && isSpriteAnimatable(stillSprite)) {
             if(!animatedSprites.contains(flowingSprite)) {
                 animatedSprites.add(flowingSprite);
             }
@@ -308,7 +321,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
     public void addToAnimatedSprites(BakedQuad quad){
         Sprite sprite = quad.getSprite();
         if(sprite != null){
-            if(sprite.getAnimation()!=null) {
+            if(isSpriteAnimatable(sprite)) {
                 if(!this.animatedSprites.contains(sprite)) {
                     this.animatedSprites.add(sprite);
                 }
@@ -508,7 +521,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
     public boolean spawnEntity(BlockPos pos, Entity entity) {
         long key = pos.asLong();
-        entity.world = this.world;
+        //entity.world = this.world;
         if (this.mirageStateNEntities.containsKey(key)) {
             StateNEntity mirageStateNEntity = this.mirageStateNEntities.get(key);
             mirageStateNEntity.entity = entity;
@@ -596,21 +609,32 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     @Override
+    public void playSound(@Nullable PlayerEntity except, double x, double y, double z, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) {
+
+    }
+
+    @Override
     public void playSound(@Nullable PlayerEntity except, double x, double y, double z, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
 
     }
 
     @Override
-    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed) {
 
     }
+
+    /*@Override
+    public void playSoundFromEntity(@Nullable PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed) {
+
+    }*/
 
     @Override
     public ServerWorld toServerWorld() {
         if (this.world instanceof ServerWorld) {
             return (ServerWorld) this.world;
+        }else{
+            return mc.getServer().getWorld(world.getRegistryKey());
         }
-        throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
     }
 
 
@@ -672,10 +696,22 @@ public class MirageWorld extends World implements ServerWorldAccess {
         return world.getColor(pos, colorResolver);
     }
 
+    /*
+    @Override
+    public int getColor(BlockPos pos, ColorResolver colorResolver) {
+        return world.getColor(pos, colorResolver);
+    }
+*/
+
     @Override
     public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
         return world.getGeneratorStoredBiome(biomeX,biomeY,biomeZ);
     }
+
+    /*@Override
+    public RegistryEntry<Biome> getGeneratorStoredBiome(int biomeX, int biomeY, int biomeZ) {
+        return world.getGeneratorStoredBiome(biomeX,biomeY,biomeZ);
+    }*/
 
     @Override
     public long getTime() {
@@ -691,6 +727,18 @@ public class MirageWorld extends World implements ServerWorldAccess {
     public DynamicRegistryManager getRegistryManager() {
         return this.world.getRegistryManager();
     }
+
+    @Override
+    public FeatureSet getEnabledFeatures() {
+        return this.world.getEnabledFeatures();
+    }
+
+    /*
+    @Override
+    public DynamicRegistryManager getRegistryManager() {
+        return this.world.getRegistryManager();
+    }
+*/
 
     @Override
     public LightingProvider getLightingProvider() {

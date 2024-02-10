@@ -47,7 +47,7 @@ public class MirageBufferStorage {
         layers.add(RenderLayer.getWaterMask());
 
         layers.addAll(RenderLayer.getBlockLayers());
-        layers.add(RenderLayer.getEntitySolid(MinecraftClient.getInstance().getPaintingManager().getBackSprite().getAtlas().getId()));
+        layers.add(RenderLayer.getEntitySolid(MinecraftClient.getInstance().getPaintingManager().getBackSprite().getAtlasId()));
 
 
         layers.add(RenderLayer.getArmorGlint());
@@ -60,7 +60,7 @@ public class MirageBufferStorage {
         mirageImmediate.getLayerBuffers().forEach((renderLayer,bufferBuilder)->{
             if(bufferBuilder.isBuilding()){
                 if(!this.mirageVertexBuffers.containsKey(renderLayer)){
-                    this.mirageVertexBuffers.put(renderLayer, new VertexBuffer());
+                    this.mirageVertexBuffers.put(renderLayer, new VertexBuffer(VertexBuffer.Usage.STATIC));
                 }
                 this.mirageVertexBuffers.get(renderLayer).bind();
                 this.mirageVertexBuffers.get(renderLayer).upload(bufferBuilder.end());

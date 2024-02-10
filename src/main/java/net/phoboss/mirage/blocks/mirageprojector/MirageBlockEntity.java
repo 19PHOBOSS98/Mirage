@@ -5,10 +5,11 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.state.property.Properties;
 import net.minecraft.structure.StructurePlacementData;
@@ -23,16 +24,13 @@ import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import net.phoboss.mirage.client.rendering.customworld.StructureStates;
 import net.phoboss.mirage.utility.RedstoneStateChecker;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.core.AnimationState;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.builder.ILoopType;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.core.animatable.GeoAnimatable;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.*;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.RenderUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MirageBlockEntity extends BlockEntity implements IAnimatable {
+public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     public MirageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MIRAGE_BLOCK, pos, state);
         setBookSettingsPOJO(new MirageProjectorBook());
@@ -96,8 +94,6 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
                 mirageWorlds.add(new MirageWorld(world));
             }
         }
-    }public void addMirageWorld(){
-        mirageWorlds.add(new MirageWorld(world));
     }
 
     public void loadMirage() throws Exception{
@@ -108,7 +104,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         try {
             List<String> files = getFileNames();
             int fileCount = files.size();
-            resetMirageWorlds(world,fileCount);
+            resetMirageWorlds(world, fileCount);
 
             HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
@@ -273,6 +269,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         }
     }
 
+
     @Nullable
     @Override
     public Packet<ClientPlayPacketListener> toUpdatePacket() {
@@ -431,39 +428,45 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
 
     }
 
-    AnimationFactory animationFactory = GeckoLibUtil.createFactory(this);
+    private AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
+
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController<MirageBlockEntity>(this,"controller",0,this::predicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "controller", 0, this::predicate));
+        
     }
 
-    private PlayState predicate(AnimationEvent<MirageBlockEntity> event) {
-        MirageBlockEntity subject = event.getAnimatable();
-        AnimationController controller = event.getController();
-        controller.transitionLengthTicks = 0;
+    private <T extends GeoAnimatable> PlayState predicate(AnimationState<T> geoAnimatableAnimationState) {
+        MirageBlockEntity subject = (MirageBlockEntity) geoAnimatableAnimationState.getAnimatable();
+        AnimationController controller = geoAnimatableAnimationState.getController();
+
         if(subject.isPowered()&&!subject.wasBottomPowered()){
-            controller.setAnimation(new AnimationBuilder().addAnimation("ramp_up", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
+            controller.setAnimation(RawAnimation.begin().then("ramp_up", Animation.LoopType.PLAY_ONCE));
+            return PlayState.CONTINUE;
+        }else if(!subject.isPowered() && subject.wasBottomPowered()){
+            controller.setAnimation(RawAnimation.begin().then("ramp_down", Animation.LoopType.PLAY_ONCE));
             return PlayState.CONTINUE;
         }
-        else if(!subject.isPowered() && subject.wasBottomPowered()){
-            controller.setAnimation(new AnimationBuilder().addAnimation("ramp_down", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
-            return PlayState.CONTINUE;
-        }
-        if(controller.getAnimationState() != AnimationState.Stopped) {
+
+        if(controller.getAnimationState() != AnimationController.State.STOPPED) {
             return PlayState.CONTINUE;
         }
         if (subject.isPowered()) {
-            controller.setAnimation(new AnimationBuilder().addAnimation("projecting", ILoopType.EDefaultLoopTypes.LOOP));
+            controller.setAnimation(RawAnimation.begin().then("projecting", Animation.LoopType.LOOP));
             return PlayState.CONTINUE;
         }
-        controller.setAnimation(new AnimationBuilder().addAnimation("idle", ILoopType.EDefaultLoopTypes.LOOP));
+        controller.setAnimation(RawAnimation.begin().then("idle", Animation.LoopType.LOOP));
         return PlayState.CONTINUE;
-
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.animationFactory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
+    }
+
+    @Override
+    public double getTick(Object blockEntity) {
+        return RenderUtils.getCurrentTick();
     }
 
 }
