@@ -25,22 +25,23 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         boolean isTopPowered = blockEntity.isTopPowered();
         boolean isPowered = blockEntity.isPowered();
-
+        boolean areSidesPowered = blockEntity.areSidesPowered();
         if(isPowered) {
             List<MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
             if(mirageWorldList.isEmpty()) {
                 blockEntity.savePreviousTopPowerState(isTopPowered);
                 blockEntity.savePreviousBottomPowerState(isPowered);
+                blockEntity.savePreviousSidesPowerState(areSidesPowered);
                 return;
             }
             MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
 
             if(mirageProjectorBook.isAutoPlay()) {
-                if(!isTopPowered) {
+                if(!blockEntity.isPause()) {
                     blockEntity.nextMirageWorldIndex(mirageWorldList.size());
                 }
             }else{
-                if(isTopPowered && !blockEntity.wasTopPowered()){
+                if(blockEntity.isStepping()){
                     blockEntity.nextBookStep(mirageWorldList.size());
                 }
                 //blockEntity.setMirageWorldIndex(Math.abs(Math.max(0,Math.min(mirageProjectorBook.getStep(),mirageWorldList.size()-1))));
@@ -58,6 +59,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         }
         blockEntity.savePreviousTopPowerState(isTopPowered);
         blockEntity.savePreviousBottomPowerState(isPowered);
+        blockEntity.savePreviousSidesPowerState(areSidesPowered);
     }
 
     @Override
