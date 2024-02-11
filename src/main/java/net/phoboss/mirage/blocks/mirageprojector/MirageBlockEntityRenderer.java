@@ -28,7 +28,6 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         super.render(blockEntity, partialTick, poseStack, bufferSource, packedLight);
         boolean isTopPowered = blockEntity.isTopPowered();
         boolean isPowered = blockEntity.isPowered();
-        blockEntity.setReverse(blockEntity.areSidesPowered());
         if(isPowered) {
             List<MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
             if(mirageWorldList.isEmpty()) {
