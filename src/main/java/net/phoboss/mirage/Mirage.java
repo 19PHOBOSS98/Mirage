@@ -21,6 +21,7 @@ import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.client.rendering.ModRendering;
 import net.phoboss.mirage.items.ModItems;
 import org.slf4j.Logger;
+import software.bernie.geckolib3.GeckoLib;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -39,7 +40,7 @@ public class Mirage
     public Mirage()
     {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
+        GeckoLib.initialize();
 
         ModBlocks.registerAll(eventBus);
         ModItems.registerAll(eventBus);
