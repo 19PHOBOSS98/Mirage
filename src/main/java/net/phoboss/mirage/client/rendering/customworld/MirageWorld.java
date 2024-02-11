@@ -342,7 +342,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public static boolean addToManualBlockRenderList(long blockPosKey, StateNEntity stateNEntity, Long2ObjectOpenHashMap<StateNEntity> manualRenderBlocks){
-        if(ModList.get().isLoaded("decobeacon")) {
+        if(ModList.get().isLoaded("decobeacons")) {
             if (stateNEntity.blockState.getBlock() instanceof DecoBeaconBlock) {
                 manualRenderBlocks.put(blockPosKey, stateNEntity);
                 return true;
