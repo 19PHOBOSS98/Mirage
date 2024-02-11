@@ -632,9 +632,8 @@ public class MirageWorld extends World implements ServerWorldAccess {
     public ServerWorld toServerWorld() {
         if (this.world instanceof ServerWorld) {
             return (ServerWorld) this.world;
-        }else{
-            return mc.getServer().getWorld(world.getRegistryKey());
         }
+        throw new IllegalStateException("Cannot use ServerWorldAccess#toServerWorld in a client environment");
     }
 
 
