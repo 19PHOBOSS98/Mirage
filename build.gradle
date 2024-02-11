@@ -22,7 +22,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.0.1-1.18.2'
+version = '0.0.1-1.18.2-Forge'
 group = 'net.phoboss.mirage' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mirage'
 
@@ -185,7 +185,6 @@ dependencies {
 
     compileOnly( fg.deobf("curse.maven:oculus-581495:4578744"))
     compileOnly( fg.deobf("curse.maven:embeddium-908741:5067973"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
-    //compileOnly( fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2"))
     compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
     compileOnly( fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge"))
 
@@ -199,12 +198,10 @@ dependencies {
     //COMMENTOUT when running in server//
     runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
-    //runtimeOnly fg.deobf("orge.embeddedt:embeddium:0.2.17-git.d06d0fa.dirtymc1.18.2")
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
     runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")
-    //runtimeOnly "maven.modrinth:lhGA9TYQ:o069zrDa"//https://modrinth.com/mod/architectury-api/version/4.11.93+forge
 
 }
 
