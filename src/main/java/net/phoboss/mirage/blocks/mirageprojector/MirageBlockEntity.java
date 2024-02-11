@@ -333,6 +333,25 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         }
         return active;
     }
+
+    public boolean isPause(){
+        return areSidesPowered();
+    }
+    public boolean isStepping(){
+        return areSidesPowered() && !wereSidesPowered();
+    }
+    public boolean isRewind(){
+        return isTopPowered();
+    }
+
+    public RedstoneStateChecker sidesRedstoneStateChecker = new RedstoneStateChecker();
+    public boolean wereSidesPowered() {
+        return sidesRedstoneStateChecker.getPreviousState();
+    }
+    public void savePreviousSidesPowerState(Boolean currentState) {
+        sidesRedstoneStateChecker.setPreviousState(currentState);
+    }
+
     public RedstoneStateChecker bottomRedstoneStateChecker = new RedstoneStateChecker();
     public boolean wasBottomPowered() {
         return bottomRedstoneStateChecker.getPreviousState();
@@ -341,13 +360,13 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         bottomRedstoneStateChecker.setPreviousState(currentState);
     }
     public RedstoneStateChecker topRedstoneStateChecker = new RedstoneStateChecker();
-
     public boolean wasTopPowered() {
         return topRedstoneStateChecker.getPreviousState();
     }
     public void savePreviousTopPowerState(Boolean currentState) {
         topRedstoneStateChecker.setPreviousState(currentState);
     }
+
     public boolean isAutoPlay(){
         return getBookSettingsPOJO().isAutoPlay();
     }
@@ -362,9 +381,10 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
     public void nextBookStep(int listSize){
         int nextStep = getBookSettingsPOJO().getStep();
         boolean reverse = getBookSettingsPOJO().isReverse();
+        if(isRewind()){
+            reverse = !reverse;
+        }
         nextStep = reverse ? nextStep - 1 : nextStep + 1;
-
-
         if(getBookSettingsPOJO().isLoop()) {
             /*if (getBookSettingsPOJO().isReverse()) {
                 nextStep = (nextStep + listSize) % listSize;
@@ -397,7 +417,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         if (currentTime - this.previousTime >= getBookSettingsPOJO().getDelay()*1000) {
             int index = getMirageWorldIndex();
             boolean reverse = getBookSettingsPOJO().isReverse();
-            if(areSidesPowered()){
+            if(isRewind()){
                 reverse = !reverse;
             }
             index = reverse ? index - 1 : index + 1;
