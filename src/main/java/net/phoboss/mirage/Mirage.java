@@ -13,12 +13,14 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.client.rendering.ModRendering;
+import net.phoboss.mirage.items.ModItemGroups;
 import net.phoboss.mirage.items.ModItems;
 import org.slf4j.Logger;
 
@@ -40,6 +42,7 @@ public class Mirage
     {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
+        ModItemGroups.registerAll(eventBus);
 
         ModBlocks.registerAll(eventBus);
         ModItems.registerAll(eventBus);
@@ -53,7 +56,7 @@ public class Mirage
 
     private void setupClient(final FMLCommonSetupEvent event)
     {
-        ModRendering.registerAll();
+
     }
 
     private void setup(final FMLCommonSetupEvent event)
@@ -63,10 +66,10 @@ public class Mirage
     }
 
     @Mod.EventBusSubscriber(modid = Mirage.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public class ModEventClientBusEvents {
+    public class ClientModEvents {
         @SubscribeEvent
-        public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event){
-            ModRendering.registerBlockEntityRenderers(event);
+        public static void onClientSetup(FMLClientSetupEvent event){
+            ModRendering.registerAll();
         }
     }
 

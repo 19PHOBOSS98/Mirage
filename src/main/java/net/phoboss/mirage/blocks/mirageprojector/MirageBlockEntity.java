@@ -26,16 +26,12 @@ import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import net.phoboss.mirage.client.rendering.customworld.StructureStates;
 import net.phoboss.mirage.utility.RedstoneStateChecker;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.core.AnimationState;
-import software.bernie.geckolib3.core.IAnimatable;
-import software.bernie.geckolib3.core.PlayState;
-import software.bernie.geckolib3.core.builder.AnimationBuilder;
-import software.bernie.geckolib3.core.builder.ILoopType;
-import software.bernie.geckolib3.core.controller.AnimationController;
-import software.bernie.geckolib3.core.event.predicate.AnimationEvent;
-import software.bernie.geckolib3.core.manager.AnimationData;
-import software.bernie.geckolib3.core.manager.AnimationFactory;
-import software.bernie.geckolib3.util.GeckoLibUtil;
+import software.bernie.geckolib.animatable.GeoBlockEntity;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animatable.instance.SingletonAnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.*;
+import software.bernie.geckolib.core.object.PlayState;
+import software.bernie.geckolib.util.RenderUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,7 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
-public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForgeBlockEntity {
+public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IForgeBlockEntity {
     public MirageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MIRAGE_BLOCK.get(), pos, state);
         setBookSettingsPOJO(new MirageProjectorBook());
@@ -366,6 +362,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
     public void nextBookStep(int listSize){
         int nextStep = getBookSettingsPOJO().getStep();
         boolean reverse = getBookSettingsPOJO().isReverse();
+        if(areSidesPowered()){
+            reverse = !reverse;
+        }
         nextStep = reverse ? nextStep - 1 : nextStep + 1;
 
 
@@ -401,6 +400,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         if (currentTime - this.previousTime >= getBookSettingsPOJO().getDelay()*1000) {
             int index = getMirageWorldIndex();
             boolean reverse = getBookSettingsPOJO().isReverse();
+            if(areSidesPowered()){
+                reverse = !reverse;
+            }
             index = reverse ? index - 1 : index + 1;
 
 
@@ -435,40 +437,44 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
 
     }
 
-    AnimationFactory animationFactory = GeckoLibUtil.createFactory(this);
+    private AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
     @Override
-    public void registerControllers(AnimationData data) {
-        data.addAnimationController(new AnimationController<MirageBlockEntity>(this,"controller",0,this::predicate));
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+        controllerRegistrar.add(new AnimationController(this,"controller",0,this::predicate));
     }
 
-    private PlayState predicate(AnimationEvent<MirageBlockEntity> event) {
-        MirageBlockEntity subject = event.getAnimatable();
-        AnimationController controller = event.getController();
-        controller.transitionLengthTicks = 0;
+    private PlayState predicate(AnimationState animationState) {
+        MirageBlockEntity subject = (MirageBlockEntity) animationState.getAnimatable();
+        AnimationController controller = animationState.getController();
         if(subject.isPowered()&&!subject.wasBottomPowered()){
-            controller.setAnimation(new AnimationBuilder().addAnimation("ramp_up", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
+            controller.setAnimation(RawAnimation.begin().then("ramp_up", Animation.LoopType.PLAY_ONCE));
             return PlayState.CONTINUE;
         }
         else if(!subject.isPowered() && subject.wasBottomPowered()){
-            controller.setAnimation(new AnimationBuilder().addAnimation("ramp_down", ILoopType.EDefaultLoopTypes.PLAY_ONCE));
+            controller.setAnimation(RawAnimation.begin().then("ramp_down", Animation.LoopType.PLAY_ONCE));
             return PlayState.CONTINUE;
         }
-        if(controller.getAnimationState() != AnimationState.Stopped) {
+        if(controller.getAnimationState() != AnimationController.State.STOPPED) {
             return PlayState.CONTINUE;
         }
         if (subject.isPowered()) {
-            controller.setAnimation(new AnimationBuilder().addAnimation("projecting", ILoopType.EDefaultLoopTypes.LOOP));
+            controller.setAnimation(RawAnimation.begin().then("projecting", Animation.LoopType.LOOP));
             return PlayState.CONTINUE;
         }
-        controller.setAnimation(new AnimationBuilder().addAnimation("idle", ILoopType.EDefaultLoopTypes.LOOP));
+        controller.setAnimation(RawAnimation.begin().then("idle", Animation.LoopType.LOOP));
         return PlayState.CONTINUE;
-
     }
 
     @Override
-    public AnimationFactory getFactory() {
-        return this.animationFactory;
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
+
+    @Override
+    public double getTick(Object blockEntity) {
+        return RenderUtils.getCurrentTick();
+    }
+
 
     @Override
     public AABB getRenderBoundingBox() {

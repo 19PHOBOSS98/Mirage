@@ -5,21 +5,17 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.MaterialColor;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.blocks.mirageprojector.MirageBlock;
-import net.phoboss.mirage.items.ModItemGroups;
 import net.phoboss.mirage.items.ModItems;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.function.Supplier;
 
 public class ModBlocks {
@@ -28,7 +24,7 @@ public class ModBlocks {
     public static final RegistryObject<Block> MIRAGE_BLOCK = ModBlocks.registerBlockWithoutItem(
             "mirage_block",
             () -> new MirageBlock(BlockBehaviour
-                    .Properties.of(Material.GLASS, MaterialColor.DIAMOND)
+                    .Properties.copy(Blocks.GLASS)
                     .noOcclusion()
                     .noCollission()
                     .lightLevel((state) -> state.getValue(BlockStateProperties.LIT) ? 15 : 0))
@@ -44,7 +40,7 @@ public class ModBlocks {
         return toReturn;
     }
     public static <T extends Block> RegistryObject<Item> registerBlockItem(String name, RegistryObject<T> block, CreativeModeTab group){
-        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties().tab(group)));
+        return ModItems.ITEMS.register(name, () -> new BlockItem(block.get(), new Item.Properties()));
     }
 
 

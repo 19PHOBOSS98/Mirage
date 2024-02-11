@@ -2,7 +2,6 @@ package net.phoboss.mirage.client.rendering.customworld;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
@@ -30,6 +29,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.AirItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -57,12 +57,12 @@ import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.fml.ModList;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import xfacthd.framedblocks.api.block.FramedBlockEntity;
 
 import java.util.Iterator;
@@ -73,6 +73,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         super(
                 (WritableLevelData) level.getLevelData(),
                 level.dimension(),
+                level.registryAccess(),
                 level.dimensionTypeRegistration(),
                 level::getProfiler,
                 level.isClientSide(),
@@ -194,9 +195,12 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             renderMirageBlockEntity(block.blockEntity, tickDelta, matrices, vertexConsumers);
             matrices.popPose();
         });
-
-        Matrix4f matrixView = RenderSystem.getModelViewMatrix().copy();
-        matrixView.multiply(matrices.last().pose().copy());
+        /*
+        Matrix4f matrixView = RenderSystem.getModelViewMatrix();
+        matrixView.mul(matrices.peek().pose());
+         */
+        Matrix4f matrixView = new Matrix4f(RenderSystem.getModelViewMatrix());
+        matrixView.mul(new Matrix4f(matrices.last().pose()));
         this.mirageBufferStorage.mirageVertexBuffers.forEach((renderLayer,vertexBuffer)->{
             renderLayer.setupRenderState();
             vertexBuffer.bind();
@@ -272,7 +276,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     //WIP FramedBlocks compat
 
     //WIP Embeddium compat
-
     public static void markAnimatedSprite(ObjectArrayList<TextureAtlasSprite> animatedSprites){
         if(!ModList.get().isLoaded("embeddium")){
             return;
@@ -282,13 +285,17 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         });
     }
 
+    public static boolean isSpriteAnimatable(TextureAtlasSprite sprite){
+        return sprite.contents().getUniqueFrames().count()>1;
+    }
+
     public static void addFluidToAnimatedSprites(Level world, BlockPos blockPos, FluidState fluidState, ObjectArrayList<TextureAtlasSprite> animatedSprites){
         TextureAtlasSprite[] fluidSprites = net.minecraftforge.client.ForgeHooksClient.getFluidSprites(world, blockPos, fluidState);
         for(TextureAtlasSprite sprite : fluidSprites){
             if(sprite == null){
                 continue;
             }
-            if(sprite.getAnimationTicker()!=null) {
+            if(isSpriteAnimatable(sprite)) {
                 if(!animatedSprites.contains(sprite)) {
                     animatedSprites.add(sprite);
                 }
@@ -299,7 +306,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     public void addToAnimatedSprites(BakedQuad quad){
         TextureAtlasSprite sprite = quad.getSprite();
         if(sprite != null){
-            if(sprite.getAnimationTicker()!=null) {
+            if(isSpriteAnimatable(sprite)) {
                 if(!this.animatedSprites.contains(sprite)) {
                     this.animatedSprites.add(sprite);
                 }
@@ -517,7 +524,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
     public boolean spawnEntity(BlockPos pos, Entity entity) {
         long key = pos.asLong();
-        entity.level = this.level;
+        //entity.level = this.level;
         if (this.mirageStateNEntities.containsKey(key)) {
             StateNEntity mirageStateNEntity = this.mirageStateNEntities.get(key);
             mirageStateNEntity.entity = entity;
@@ -605,12 +612,12 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     @Override
-    public void playSeededSound(@Nullable Player p_220363_, double p_220364_, double p_220365_, double p_220366_, SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {
+    public void playSeededSound(@Nullable Player p_262953_, double p_263004_, double p_263398_, double p_263376_, Holder<SoundEvent> p_263359_, SoundSource p_263020_, float p_263055_, float p_262914_, long p_262991_) {
 
     }
 
     @Override
-    public void playSeededSound(@Nullable Player p_220372_, Entity p_220373_, SoundEvent p_220374_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_) {
+    public void playSeededSound(@Nullable Player p_220372_, Entity p_220373_, Holder<SoundEvent> p_263500_, SoundSource p_220375_, float p_220376_, float p_220377_, long p_220378_) {
 
     }
 
@@ -619,7 +626,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         if (this.level instanceof ServerLevel) {
             return (ServerLevel) this.level;
         }
-        throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
+        //return ServerLifecycleHooks.getCurrentServer().getLevel(level.dimension());
+        throw new IllegalStateException("Cannot use ServerLevelAccessor#getLevel in a client environment");
     }
 
     public class BlockTicker {
@@ -696,6 +704,11 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     @Override
     public RegistryAccess registryAccess() {
         return this.level.registryAccess();
+    }
+
+    @Override
+    public FeatureFlagSet enabledFeatures() {
+        return this.level.enabledFeatures();
     }
 
     @Override
@@ -804,4 +817,5 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     public void gameEvent(@Nullable Entity pEntity, GameEvent pEvent, BlockPos pPos) {
 
     }
+
 }

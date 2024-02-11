@@ -2,6 +2,7 @@ package net.phoboss.mirage.client.rendering.customworld;
 
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -123,8 +124,8 @@ public class MirageChunkManager extends ChunkSource {
         }
 
         @Override
-        public ChunkHolder.FullChunkStatus getFullStatus() {
-            return super.getFullStatus();
+        public FullChunkStatus getFullStatus() {
+            return FullChunkStatus.FULL;
         }
     }
 }

@@ -49,7 +49,7 @@ public class MirageBufferStorage {
         layers.add(RenderType.waterMask());
 
         layers.addAll(RenderType.chunkBufferLayers());
-        layers.add(RenderType.entitySolid(Minecraft.getInstance().getPaintingTextures().getBackSprite().atlas().location()));
+        layers.add(RenderType.entitySolid(Minecraft.getInstance().getPaintingTextures().getBackSprite().atlasLocation()));
 
 
         layers.add(RenderType.armorGlint());
@@ -63,7 +63,7 @@ public class MirageBufferStorage {
             if(bufferBuilder.building()){
 
                 if(!this.mirageVertexBuffers.containsKey(renderLayer)){
-                    this.mirageVertexBuffers.put(renderLayer, new VertexBuffer());
+                    this.mirageVertexBuffers.put(renderLayer, new VertexBuffer(VertexBuffer.Usage.STATIC));
                 }
                 this.mirageVertexBuffers.get(renderLayer).bind();
                 this.mirageVertexBuffers.get(renderLayer).upload(bufferBuilder.end());

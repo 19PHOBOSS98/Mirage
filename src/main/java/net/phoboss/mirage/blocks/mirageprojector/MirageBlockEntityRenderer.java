@@ -8,27 +8,25 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.phys.Vec3;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
-import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
+import software.bernie.geckolib.cache.object.BakedGeoModel;
+import software.bernie.geckolib.renderer.GeoBlockRenderer;
 
 import java.util.List;
 
 
-public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntity>{
-    public MirageBlockEntityRenderer(BlockEntityRendererProvider.Context rendererProvider) {
-        super(rendererProvider, new MirageBlockModel());
+public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntity> {
+
+    public MirageBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        super(new MirageBlockModel());
     }
 
     @Override
-    public void render(MirageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        super.render(blockEntity, partialTick, poseStack, bufferSource, packedLight);
+    public void renderFinal(PoseStack poseStack, MirageBlockEntity blockEntity, BakedGeoModel model, MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        super.renderFinal(poseStack, blockEntity, model, bufferSource, buffer, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
         boolean isTopPowered = blockEntity.isTopPowered();
         boolean isPowered = blockEntity.isPowered();
-        blockEntity.setReverse(blockEntity.areSidesPowered());
         if(isPowered) {
             List<MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
             if(mirageWorldList.isEmpty()) {
@@ -63,18 +61,19 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         blockEntity.savePreviousBottomPowerState(isPowered);
     }
 
-    @Override
-    public boolean shouldRenderOffScreen(BlockEntity pBlockEntity) {
-        return true;
-    }
-
-    @Override
-    public RenderType getRenderType(MirageBlockEntity animatable, float partialTick, PoseStack poseStack, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, int packedLight, ResourceLocation texture) {
-        return RenderType.entityTranslucent(getTextureLocation(animatable));
-    }
 
     @Override
     public int getViewDistance() {
         return 512;
+    }
+
+    @Override
+    public boolean shouldRenderOffScreen(MirageBlockEntity pBlockEntity) {
+        return true;
+    }
+
+    @Override
+    public RenderType getRenderType(MirageBlockEntity animatable, ResourceLocation texture, @Nullable MultiBufferSource bufferSource, float partialTick) {
+        return RenderType.entityTranslucent(getTextureLocation(animatable));
     }
 }

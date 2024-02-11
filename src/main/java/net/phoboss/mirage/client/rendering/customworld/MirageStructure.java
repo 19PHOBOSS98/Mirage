@@ -4,6 +4,9 @@ import com.google.common.collect.Lists;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
@@ -13,6 +16,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -32,9 +36,13 @@ public class MirageStructure extends StructureTemplate {
         super();
     }
 
-    @Override
     public void load(CompoundTag nbt) {
-        super.load(nbt);
+        load(BuiltInRegistries.BLOCK.asLookup(), nbt);
+    }
+
+    @Override
+    public void load(HolderGetter<Block> holderGetter, CompoundTag nbt) {
+        super.load(holderGetter, nbt);
         ListTag entitiesNbt = nbt.getList("entities", 10);
         for(int j = 0; j < entitiesNbt.size(); ++j) {
             CompoundTag compoundtag = entitiesNbt.getCompound(j);

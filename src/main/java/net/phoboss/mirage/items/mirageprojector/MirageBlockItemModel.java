@@ -2,9 +2,9 @@ package net.phoboss.mirage.items.mirageprojector;
 
 import net.minecraft.resources.ResourceLocation;
 import net.phoboss.mirage.Mirage;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
+import software.bernie.geckolib.model.GeoModel;
 
-public class MirageBlockItemModel extends AnimatedGeoModel<MirageBlockItem> {
+public class MirageBlockItemModel extends GeoModel<MirageBlockItem> {
     @Override
     public ResourceLocation getModelResource(MirageBlockItem object) {
         return new ResourceLocation(Mirage.MOD_ID,"geo/zoetrope.geo.json");
