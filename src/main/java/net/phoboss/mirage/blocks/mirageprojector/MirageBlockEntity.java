@@ -394,6 +394,9 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         if (currentTime - this.previousTime >= getBookSettingsPOJO().getDelay()*1000) {
             int index = getMirageWorldIndex();
             boolean reverse = getBookSettingsPOJO().isReverse();
+            if(areSidesPowered()){
+                reverse = !reverse;
+            }
             index = reverse ? index - 1 : index + 1;
 
 
