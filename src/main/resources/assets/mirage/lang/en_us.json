@@ -6,16 +6,34 @@
 
   "invalid_page_entry": "might need to check on what you wrote...",
 
-  "block.mirage.item.tooltip_0":"§lRight-Click§r With:",
-  "block.mirage.item.tooltip_1":"§4Redstone Torch§r To Toggle §4Active-Low§r Mode",
-  "block.mirage.item.tooltip_2":"§bSoul Torch§r To Toggle §bAutoPlay§r Mode",
-  "block.mirage.item.tooltip_3":"§6Book&Quill§r For More §6Settings§r",
-  "block.mirage.item.tooltip_4":"Press §eSHIFT§r for more info",
+  "block.mirage.item.tooltip.0":"§lRight-Click§r With:",
+  "block.mirage.item.tooltip.1":"§4Redstone Torch§r To Toggle §4Active-Low§r Mode",
+  "block.mirage.item.tooltip.2":"§bSoul Torch§r To Toggle §bAutoPlay§r Mode",
+  "block.mirage.item.tooltip.3":"§6Book&Quill§r To Apply §6Book Settings§r",
+  "block.mirage.item.tooltip.4":"Press §eSHIFT§r for §4Redstone Inputs§r",
+  "block.mirage.item.tooltip.5":"Press §eCTRL§r for §6Book Settings§r",
 
 
-  "block.mirage.item.tooltip.shift_0":"Redstone Inputs:",
-  "block.mirage.item.tooltip.shift_1":"Bottom Face: §4Power§r",
-  "block.mirage.item.tooltip.shift_2":"Top Face: §6Reverse§r",
-  "block.mirage.item.tooltip.shift_3":"Side Faces: §aStep§r Frames (§aPause/Play§r When §bAutoPlay Mode§r Is On)"
+  "block.mirage.item.tooltip.shift.0":"§4Redstone Inputs:§r",
+  "block.mirage.item.tooltip.shift.1":"Bottom Face: §4Power§r",
+  "block.mirage.item.tooltip.shift.2":"Top Face: §5Reverse§r",
+  "block.mirage.item.tooltip.shift.3":"Side Faces: §aStep§r Frames",
+  "block.mirage.item.tooltip.shift.4":"Side Faces: §aPause/Play§r (When §bAutoPlay Mode§r Is On)",
 
+  "block.mirage.item.tooltip.ctrl.0":"§6Book Settings:§r",
+  "block.mirage.item.tooltip.ctrl.1":"§4activeLow§r:true/false,",
+  "block.mirage.item.tooltip.ctrl.2":"§bautoPlay§r:true/false, (Creative Only)",
+  "block.mirage.item.tooltip.ctrl.3":"§5reverse§r:true/false,",
+  "block.mirage.item.tooltip.ctrl.4":"§6loop§r:true/false,",
+  "block.mirage.item.tooltip.ctrl.5":"§astep§r:frame_number,",
+  "block.mirage.item.tooltip.ctrl.6":"§6delay§r:number,",
+  "block.mirage.item.tooltip.ctrl.7":"§6move§r:[§4x§r,§ay§r,§9z§r],",
+  "block.mirage.item.tooltip.ctrl.8":"§6rotate§r:0/90/180/270,",
+  "block.mirage.item.tooltip.ctrl.9":"§6mirror§r:NONE/FRONT_BACK/LEFT_RIGHT,",
+  "block.mirage.item.tooltip.ctrl.10":"§6files§r:[filename0,filename1,...],",
+  "block.mirage.item.tooltip.ctrl.11":"§6frames§r:{",
+  "block.mirage.item.tooltip.ctrl.12":"    0:{move:[0,0,0],rotate:0,mirror:NONE},",
+  "block.mirage.item.tooltip.ctrl.13":"    1:{move:[0,0,0],rotate:0,mirror:NONE},...",
+  "block.mirage.item.tooltip.ctrl.14":"}",
+  "block.mirage.item.tooltip.ctrl.15":"§e§l!!SEPARATE EACH SETTING WITH A COMMA!!§r"
 }

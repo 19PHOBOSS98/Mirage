@@ -22,23 +22,7 @@ public class ModItems {
     public static final Item MIRAGE_BLOCK_ITEM = registerItem("mirage_block",
             new MirageBlockItem(
                     ModBlocks.MIRAGE_BLOCK,
-                    new FabricItemSettings().maxCount(1)){
-                        @Override
-                        public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-                            if (Screen.hasShiftDown()) {
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_0"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_1"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_2"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_3"));
-                            } else {
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip_0"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip_1"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip_2"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip_3"));
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip_4"));
-                            }
-                        }
-                    });
+                    new FabricItemSettings().maxCount(1)));
 
             public static Item registerItem(String name, Item item){
                 return Registry.register(Registries.ITEM,new Identifier(Mirage.MOD_ID,name),item);
