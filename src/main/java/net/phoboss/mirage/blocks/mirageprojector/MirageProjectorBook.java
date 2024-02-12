@@ -124,10 +124,11 @@ public class MirageProjectorBook implements Book {
         this.activeLow = activeLow;
     }
 
+    String[] BOOLEAN_KEYS = {"activeLow","loop","autoPlay","reverse"};
     @Override
     public Book validateNewBookSettings(JsonObject newSettings) throws Exception {
         JsonArray moveArray = newSettings.get("move").getAsJsonArray();
-        if(moveArray.size()>3){
+        if(moveArray.size()!=3){
             throw new Exception("Invalid Move Value: "+ newSettings.get("move"));
         }
         try {
@@ -136,6 +137,13 @@ public class MirageProjectorBook implements Book {
             });
         }catch (Exception e){
             throw new Exception("Invalid Move Value: "+ newSettings.get("move"));
+        }
+
+        for(String key:BOOLEAN_KEYS){
+            String value = newSettings.get(key).getAsString();
+            if(value.equals("false") == value.equals("true")){
+                throw new Exception("Invalid "+key+" Value: "+ value);
+            }
         }
 
         MirageProjectorBook newBook = new Gson().fromJson(newSettings, MirageProjectorBook.class);
