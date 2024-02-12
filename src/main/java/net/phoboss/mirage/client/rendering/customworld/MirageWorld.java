@@ -454,7 +454,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
             this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
         });
-
+        this.mirageStateNEntities.clear();
     }
 
     public static void renderMirageBlockEntity(BlockEntity blockEntity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers){
