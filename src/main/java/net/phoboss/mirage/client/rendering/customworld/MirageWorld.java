@@ -446,7 +446,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
             this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
         });
-
+        this.mirageStateNEntities.clear();
     }
 
     public static void renderMirageBlockEntity(BlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers){
