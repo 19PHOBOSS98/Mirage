@@ -41,16 +41,35 @@ public class MirageBlockItem extends BlockItem implements IAnimatable {
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if (Screen.hasShiftDown()) {
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_0"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_1"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_2"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_3"));
-        } else {
-            tooltip.add(Text.translatable("block.mirage.item.tooltip_0"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip_1"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip_2"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip_3"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip_4"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.0"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.1"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.2"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.3"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.4"));
+        } else if(Screen.hasControlDown()){
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.0"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.1"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.2"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.3"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.4"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.5"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.6"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.7"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.8"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.9"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.10"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.11"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.12"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.13"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.14"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.15"));
+        }else {
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.0"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.1"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.2"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.3"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.4"));
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.5"));
         }
     }
 
