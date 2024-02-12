@@ -12,7 +12,7 @@ public class ModItems {
     public static final Item MIRAGE_BLOCK_ITEM = registerItem("mirage_block",
             new MirageBlockItem(
                     ModBlocks.MIRAGE_BLOCK,
-                    new Item.Settings().group(ModItemGroups.MIRAGE)));
+                    new Item.Settings().group(ModItemGroups.MIRAGE).maxCount(1)));
 
             public static Item registerItem(String name, Item item){
                 return Registry.register(Registry.ITEM,new Identifier(Mirage.MOD_ID,name),item);
