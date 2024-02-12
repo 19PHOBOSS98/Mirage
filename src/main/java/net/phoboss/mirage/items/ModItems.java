@@ -26,9 +26,16 @@ public class ModItems {
                         @Override
                         public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
                             if (Screen.hasShiftDown()) {
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_0"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_1"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_2"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_3"));
                             } else {
-                                tooltip.add(Text.translatable("block.mirage.item.tooltip"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip_0"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip_1"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip_2"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip_3"));
+                                tooltip.add(Text.translatable("block.mirage.item.tooltip_4"));
                             }
                         }
                     });
