@@ -64,8 +64,6 @@ import org.joml.Matrix4f;
 import java.util.Iterator;
 import java.util.List;
 
-;
-
 
 public class MirageWorld extends World implements ServerWorldAccess {
     public MirageWorld(World world) {
@@ -459,7 +457,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
             this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
         });
-
+        this.mirageStateNEntities.clear();
     }
 
     public static void renderMirageBlockEntity(BlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers){
