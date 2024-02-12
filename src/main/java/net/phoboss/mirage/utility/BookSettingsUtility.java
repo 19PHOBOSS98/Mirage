@@ -30,6 +30,7 @@ public interface BookSettingsUtility {
         for(int i=0; i<pagesNbt.size(); ++i) {
             pagesStr = pagesStr + pagesNbt.getString(i);
         }
+        pagesStr = pagesStr.endsWith(",") ? pagesStr.substring(0, pagesStr.length() - 1) : pagesStr;
         pagesStr = pagesStr + "}";
 
         try {
