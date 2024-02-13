@@ -3,7 +3,7 @@
 	"id": "mirage",
 	"version": "${version}",
 	"name": "Mirage",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Adds The Mirage Projector. It lets you project or animate holographic multiblock structures (.nbt files) in realtime",
 	"authors": [
 		"PHOBOSS"
 	],
