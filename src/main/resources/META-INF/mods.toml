@@ -9,7 +9,7 @@ modLoader="javafml" #mandatory
 loaderVersion="[40,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 # The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
 # Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
-license="MIT"
+license="LGPLv3"
 # A URL to refer people to when problems occur with this mod
 #issueTrackerURL="https://change.me.to.your.issue.tracker.example.invalid/" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
@@ -34,7 +34,8 @@ logoFile="mirage.png" #optional
 authors="PHOBOSS" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-Adds The Mirage Projector. It lets you project or animate holographic multiblock structures (.nbt files) in realtime.
+Adds The Mirage Projector.
+It lets you project or animate Mirages (holographic multiblock structures from .nbt files) in realtime.
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.mirage]] #optional
