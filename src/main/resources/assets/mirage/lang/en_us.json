@@ -13,7 +13,6 @@
   "block.mirage.item.tooltip.4":"Press §eSHIFT§r for §4Redstone Inputs§r",
   "block.mirage.item.tooltip.5":"Press §eCTRL§r for §6Book Settings§r",
 
-
   "block.mirage.item.tooltip.shift.0":"§4Redstone Inputs:§r",
   "block.mirage.item.tooltip.shift.1":"Bottom Face: §4Power§r",
   "block.mirage.item.tooltip.shift.2":"Top Face: §5Reverse§r",
@@ -30,10 +29,10 @@
   "block.mirage.item.tooltip.ctrl.7":"§6move§r:[§4x§r,§ay§r,§9z§r],",
   "block.mirage.item.tooltip.ctrl.8":"§6rotate§r:0/90/180/270,",
   "block.mirage.item.tooltip.ctrl.9":"§6mirror§r:NONE/FRONT_BACK/LEFT_RIGHT,",
-  "block.mirage.item.tooltip.ctrl.10":"§6files§r:[filename0,filename1,...],",
-  "block.mirage.item.tooltip.ctrl.11":"§6frames§r:{",
-  "block.mirage.item.tooltip.ctrl.12":"    0:{move:[0,0,0],rotate:0,mirror:NONE},",
-  "block.mirage.item.tooltip.ctrl.13":"    1:{move:[0,0,0],rotate:0,mirror:NONE},...",
+  "block.mirage.item.tooltip.ctrl.10":"§6files§r:[filename0, filename1, ... ],",
+  "block.mirage.item.tooltip.ctrl.11":"§6frames§r:{ ",
+  "block.mirage.item.tooltip.ctrl.12":"    0:{ move:[0,0,0], rotate:0, mirror:NONE},",
+  "block.mirage.item.tooltip.ctrl.13":"    1:{ move:[0,0,0], rotate:0, mirror:NONE},...",
   "block.mirage.item.tooltip.ctrl.14":"}",
-  "block.mirage.item.tooltip.ctrl.15":"§e§l!!SEPARATE EACH SETTING WITH A COMMA!!§r"
+  "block.mirage.item.tooltip.ctrl.15":"§e§lSEPARATE EACH SETTING WITH A COMMA§r"
 }
