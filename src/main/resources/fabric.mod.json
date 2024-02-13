@@ -3,7 +3,7 @@
 	"id": "mirage",
 	"version": "${version}",
 	"name": "Mirage",
-	"description": "Adds The Mirage Projector. It lets you project or animate holographic multiblock structures (.nbt files) in realtime",
+	"description": "Adds The Mirage Projector.\nIt lets you project or animate Mirages (holographic multiblock structures from .nbt files) in realtime.",
 	"authors": [
 		"PHOBOSS"
 	],
@@ -11,7 +11,7 @@
 		"homepage": "https://fabricmc.net/",
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
-	"license": "CC0-1.0",
+	"license": "LGPLv3",
 	"icon": "assets/mirage/icon.png",
 	"environment": "*",
 	"entrypoints": {
