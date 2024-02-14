@@ -27,7 +27,7 @@ displayName="Mirage Mod" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 #displayURL="https://change.me.to.your.mods.homepage.example.invalid/" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
-logoFile="assets/mirage/icon.png" #optional
+logoFile= "mirage_icon.png" #optional
 # A text field displayed in the mod UI
 #credits="Thanks for this example mod goes to Java" #optional
 # A text field displayed in the mod UI
@@ -35,7 +35,8 @@ authors="PHOBOSS" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
 Adds The Mirage Projector.
-It lets you project or animate Mirages (holographic multiblock structures from .nbt files) in realtime.
+Give it a schematic (.nbt) file and it'll project it in the world...
+Give it more then you can start animating structures in real time :) ...
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.mirage]] #optional
