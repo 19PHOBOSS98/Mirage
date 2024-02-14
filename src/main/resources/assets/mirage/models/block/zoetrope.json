@@ -21,6 +21,11 @@
       ]
     },
     "firstperson_righthand": {
+      "rotation": [
+        0,
+        0,
+        -9
+      ],
       "scale": [
         0.5,
         0.5,
@@ -28,6 +33,11 @@
       ]
     },
     "firstperson_lefthand": {
+      "rotation": [
+        0,
+        0,
+        -9
+      ],
       "scale": [
         0.5,
         0.5,
