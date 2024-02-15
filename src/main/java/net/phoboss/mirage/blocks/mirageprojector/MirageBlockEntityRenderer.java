@@ -25,8 +25,8 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
     }
 
     @Override
-    public void render(MirageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        super.render(blockEntity, partialTick, poseStack, bufferSource, packedLight);
+    public void renderLate(MirageBlockEntity blockEntity, PoseStack poseStack, float partialTick, MultiBufferSource bufferSource, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+        super.renderLate(animatable, poseStack, partialTick, bufferSource, buffer, packedLight, packedOverlay, red, green, blue, alpha);
         boolean isPowered = blockEntity.isPowered();
         if(!isPowered) {
             return;
@@ -36,40 +36,41 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         boolean areSidesPowered = blockEntity.areSidesPowered();
 
-            ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
-            if(mirageWorldList.isEmpty()) {
-                blockEntity.savePreviousTopPowerState(isTopPowered);
-                blockEntity.savePreviousBottomPowerState(isPowered);
-                blockEntity.savePreviousSidesPowerState(areSidesPowered);
-                return;
+        ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
+        if(mirageWorldList.isEmpty()) {
+            blockEntity.savePreviousTopPowerState(isTopPowered);
+            blockEntity.savePreviousBottomPowerState(isPowered);
+            blockEntity.savePreviousSidesPowerState(areSidesPowered);
+            return;
+        }
+        MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
+
+        if(mirageProjectorBook.isAutoPlay()) {
+            if(!blockEntity.isPause()) {
+                blockEntity.nextMirageWorldIndex(mirageWorldList.size());
             }
-            MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
-
-            if(mirageProjectorBook.isAutoPlay()) {
-                if(!blockEntity.isPause()) {
-                    blockEntity.nextMirageWorldIndex(mirageWorldList.size());
-                }
-            }else{
-                if(blockEntity.isStepping()){
-                    blockEntity.nextBookStep(mirageWorldList.size());
-                }
-                //blockEntity.setMirageWorldIndex(Math.abs(Math.max(0,Math.min(mirageProjectorBook.getStep(),mirageWorldList.size()-1))));
-                blockEntity.setMirageWorldIndex(Math.abs(mirageProjectorBook.getStep()) % mirageWorldList.size());//better-ish clamping function for manual book step setting
+        }else{
+            if(blockEntity.isStepping()){
+                blockEntity.nextBookStep(mirageWorldList.size());
             }
+            //blockEntity.setMirageWorldIndex(Math.abs(Math.max(0,Math.min(mirageProjectorBook.getStep(),mirageWorldList.size()-1))));
+            blockEntity.setMirageWorldIndex(Math.abs(mirageProjectorBook.getStep()) % mirageWorldList.size());//better-ish clamping function for manual book step setting
+        }
 
-            int mirageWorldIndex = blockEntity.getMirageWorldIndex();
+        int mirageWorldIndex = blockEntity.getMirageWorldIndex();
 
-            MirageWorld mirageWorld = mirageWorldList.get(mirageWorldIndex);
+        MirageWorld mirageWorld = mirageWorldList.get(mirageWorldIndex);
 
-            if (mirageWorld != null) {
-                BlockPos projectorPos = blockEntity.getBlockPos();
-                mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
-            }
+        if (mirageWorld != null) {
+            BlockPos projectorPos = blockEntity.getBlockPos();
+            mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
+        }
 
         blockEntity.savePreviousTopPowerState(isTopPowered);
         blockEntity.savePreviousBottomPowerState(isPowered);
         blockEntity.savePreviousSidesPowerState(areSidesPowered);
     }
+
 
     @Override
     public boolean shouldRenderOffScreen(BlockEntity pBlockEntity) {
