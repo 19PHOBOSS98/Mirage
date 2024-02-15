@@ -188,20 +188,20 @@ dependencies {
     compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
     compileOnly( fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge"))
 
-    runtimeOnly fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge")
-    runtimeOnly fg.deobf("curse.maven:architectury-api-419699:4521465")
+    //runtimeOnly fg.deobf("net.phoboss:decobeacon:0.0.1-1.18.2-Forge")
+    //runtimeOnly fg.deobf("curse.maven:architectury-api-419699:4521465")
 
     runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
 
     runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 
     //COMMENTOUT when running in server//
-    runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
+    /*runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
-    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")
+    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")*/
 
 }
 
