@@ -62,8 +62,8 @@ public class MirageBlock extends BaseEntityBlock implements EntityBlock, BookSet
         ItemStack mainHandItemStack = player.getMainHandItem();
         Item mainHandItem = mainHandItemStack.getItem();
         if (hand == InteractionHand.MAIN_HAND) {
-            MirageBlockEntity blockEntity = (MirageBlockEntity) world.getBlockEntity(pos);
             if(!world.isClientSide()) {
+                MirageBlockEntity blockEntity = (MirageBlockEntity) world.getBlockEntity(pos);
                 if (mainHandItem == Items.REDSTONE_TORCH) {
                     blockEntity.setActiveLow(!blockEntity.isActiveLow());
                     return InteractionResult.SUCCESS;

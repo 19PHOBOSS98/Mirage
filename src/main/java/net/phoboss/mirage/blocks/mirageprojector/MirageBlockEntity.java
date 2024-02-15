@@ -290,7 +290,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
             if(shouldReloadMirage) {
                 //loadMirage();
-                new MirageLoader().start();
+                Thread mirageLoader = new MirageLoader();
+                mirageLoader.setName("MirageLoader");
+                mirageLoader.start();
 
             }
         }catch (Exception e){
@@ -434,7 +436,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
 
     public void setMirageWorldIndex(int newMirageWorldIndex) {
         this.mirageWorldIndex = newMirageWorldIndex;
-        //setChanged();
+        setChanged();
     }
     public long previousTime = System.currentTimeMillis();
 

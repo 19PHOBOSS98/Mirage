@@ -259,7 +259,24 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             }
             matrices.popPose();
         });
+        /*
+        mirageStateNEntities gets populated from a different thread (MirageLoader).
+        mirageStateNEntities populates vertexBufferBlocksList.
+        vertexBufferBlocksList populates vertexConsumers with vertices.
+
+        if process line has reached this point and vertexBufferBlocksList is not empty that means
+        the MirageLoader thread has finished populating mirageStateNEntities
+        which in turn finished populating vertexBufferBlocksList
+        which in turn finished populating the vertexConsumers with vertices.
+
+        This ensures that it is safe to clear out the mirageStateNEntities.
+        Otherwise we would empty it out too soon and not populate the vertexBufferBlocksList.
+         */
+        if(!this.vertexBufferBlocksList.isEmpty()){
+            this.mirageStateNEntities.clear();
+        }
         this.mirageBufferStorage.uploadBufferBuildersToVertexBuffers(vertexConsumers);
+
     }
 
     //WIP FramedBlocks compat
@@ -447,7 +464,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
             this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
         });
-        this.mirageStateNEntities.clear();
+
     }
 
     public static void renderMirageBlockEntity(BlockEntity blockEntity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers){
