@@ -13,6 +13,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
@@ -54,7 +55,7 @@ public class Mirage
 
     private void setupClient(final FMLCommonSetupEvent event)
     {
-        ModRendering.registerAll();
+
     }
 
     private void setup(final FMLCommonSetupEvent event)
@@ -64,10 +65,10 @@ public class Mirage
     }
 
     @Mod.EventBusSubscriber(modid = Mirage.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public class ModEventClientBusEvents {
+    public class ClientModEvents {
         @SubscribeEvent
-        public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event){
-            ModRendering.registerBlockEntityRenderers(event);
+        public static void onClientSetup(FMLClientSetupEvent event){
+            ModRendering.registerAll();
         }
     }
 
