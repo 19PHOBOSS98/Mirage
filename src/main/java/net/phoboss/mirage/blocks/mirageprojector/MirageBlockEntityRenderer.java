@@ -16,6 +16,7 @@ import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntity>{
@@ -26,11 +27,16 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
     @Override
     public void render(MirageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         super.render(blockEntity, partialTick, poseStack, bufferSource, packedLight);
-        boolean isTopPowered = blockEntity.isTopPowered();
         boolean isPowered = blockEntity.isPowered();
+        if(!isPowered) {
+            return;
+        }
+
+        boolean isTopPowered = blockEntity.isTopPowered();
+
         boolean areSidesPowered = blockEntity.areSidesPowered();
-        if(isPowered) {
-            List<MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
+
+            ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
             if(mirageWorldList.isEmpty()) {
                 blockEntity.savePreviousTopPowerState(isTopPowered);
                 blockEntity.savePreviousBottomPowerState(isPowered);
@@ -59,7 +65,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
                 BlockPos projectorPos = blockEntity.getBlockPos();
                 mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
             }
-        }
+
         blockEntity.savePreviousTopPowerState(isTopPowered);
         blockEntity.savePreviousBottomPowerState(isPowered);
         blockEntity.savePreviousSidesPowerState(areSidesPowered);
