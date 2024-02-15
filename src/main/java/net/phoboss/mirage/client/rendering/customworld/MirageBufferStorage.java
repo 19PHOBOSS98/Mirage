@@ -14,18 +14,24 @@ import java.util.List;
 public class MirageBufferStorage {
     public Object2ObjectLinkedOpenHashMap<RenderType, VertexBuffer> mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
 
+    public static List<RenderType> DEFAULT_RENDER_LAYERS = getDefaultRenderLayers();
+
+    public Object2ObjectLinkedOpenHashMap<RenderType, MirageBufferBuilder> defaultBuffers = getDefaultBuffers();
+
+    public MirageImmediate mirageImmediate = new MirageImmediate(defaultBuffers);
+
     public MirageBufferStorage() {
-        reset();
+        mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
     }
 
     public Object2ObjectLinkedOpenHashMap<RenderType, MirageBufferBuilder> getDefaultBuffers(){
         Object2ObjectLinkedOpenHashMap<RenderType, MirageBufferBuilder> map = new Object2ObjectLinkedOpenHashMap<>();
-        getDefaultRenderLayers().forEach((renderLayer)->{
+        for(RenderType renderLayer : DEFAULT_RENDER_LAYERS){
             map.put(renderLayer,new MirageBufferBuilder(renderLayer.bufferSize()));
-        });
+        }
         return map;
     }
-    public List<RenderType> getDefaultRenderLayers(){
+    public static List<RenderType> getDefaultRenderLayers(){
         List<RenderType> layers = new ArrayList<>();
         layers.add(Sheets.solidBlockSheet());
         layers.add(Sheets.cutoutBlockSheet());
@@ -73,10 +79,17 @@ public class MirageBufferStorage {
     }
 
     public void reset() {
-        this.mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
+        this.mirageVertexBuffers.forEach(((renderType, vertexBuffer) -> {
+            vertexBuffer.close();
+        }));
     }
 
     public MirageImmediate getMirageImmediate(){
-        return new MirageImmediate(getDefaultBuffers());
+        /*defaultBuffers.forEach(((renderType, mirageBufferBuilder) -> {
+            mirageBufferBuilder.clear();
+        }));
+        return new MirageImmediate(defaultBuffers);*/
+        mirageImmediate.reset();
+        return mirageImmediate;
     }
 }
