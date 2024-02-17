@@ -12,7 +12,7 @@ import java.util.List;
 
 
 public class MirageBufferStorage {
-    public Object2ObjectLinkedOpenHashMap<RenderType, VertexBuffer> mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
+    public Object2ObjectLinkedOpenHashMap<RenderType, VertexBuffer> mirageVertexBuffers;
 
     public static List<RenderType> DEFAULT_RENDER_LAYERS = getDefaultRenderLayers();
 
@@ -80,7 +80,7 @@ public class MirageBufferStorage {
 
     public void reset() {
         this.mirageVertexBuffers.forEach(((renderType, vertexBuffer) -> {
-            vertexBuffer.close();
+            vertexBuffer.close();//Should only be called from "renderThread"
         }));
     }
 
