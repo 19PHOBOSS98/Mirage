@@ -84,10 +84,6 @@ public class MirageBufferStorage {
     }
 
     public MirageImmediate getMirageImmediate(){
-        /*defaultBuffers.forEach(((renderType, mirageBufferBuilder) -> {
-            mirageBufferBuilder.clear();
-        }));
-        return new MirageImmediate(defaultBuffers);*/
         mirageImmediate.reset();
         return mirageImmediate;
     }

@@ -287,22 +287,11 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         This ensures that it is safe to clear out the mirageStateNEntities.
         Otherwise we would empty it out too soon and not populate the vertexBufferBlocksList.
          */
-        if(isVertexBufferBlocksListPopulated()){
-            //this.mirageStateNEntities.clear();//clearing this here is still too early. Mirage BlockEntities also need this to check for neighboring block states
-            setBlockListReadyToBeEmptied(true);
+        if(isVertexBufferBlocksListPopulated() && !hasBlockEntities()){//Mirage BlockEntities also need this to check for neighboring block states
+            clearMirageStateNEntities();
         }
         this.mirageBufferStorage.uploadBufferBuildersToVertexBuffers(vertexConsumers);
 
-    }
-
-    public boolean blockListIsReadyToBeEmptied = false;
-
-    public boolean isBlockListReadyToBeEmptied() {
-        return blockListIsReadyToBeEmptied;
-    }
-
-    public void setBlockListReadyToBeEmptied(boolean blockListIsReadyToBeEmptied) {
-        this.blockListIsReadyToBeEmptied = blockListIsReadyToBeEmptied;
     }
 
     //WIP FramedBlocks compat
@@ -453,6 +442,16 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         this.manualEntityList.put(blockPosKey,new StateNEntity(entity));
     }
 
+    public boolean hasBlockEntities = false;
+
+    public boolean hasBlockEntities() {
+        return hasBlockEntities;
+    }
+
+    public void setHasBlockEntities(boolean hasBlockEntities) {
+        this.hasBlockEntities = hasBlockEntities;
+    }
+
     public void initBlockRenderLists() {
         this.mirageStateNEntities.forEach((blockPosKey,stateNEntity)->{
             BlockState blockState = stateNEntity.blockState;
@@ -469,6 +468,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                 if(blockEntity instanceof MirageBlockEntity){
                     return;//recursive mirages are unsafe
                 }
+
+                setHasBlockEntities(true);
                 if (blockEntityRenderDispatcher.getRenderer(blockEntity)!=null) {
                     this.bERBlocksList.put(blockPosKey,new BlockWEntity(blockState,blockEntity));
                 }

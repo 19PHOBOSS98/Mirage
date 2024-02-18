@@ -169,7 +169,6 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                 actualRotate %= 360;
                 loadMirage(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
             }
-            resetClearBlocksCountDown();
         }catch (Exception e) {
             throw new Exception("Couldn't read nbt file: "+fileName,e);
         }
@@ -192,7 +191,8 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         StructurePlaceSettings.setMirror(StructureStates.MIRROR_STATES.get(mirror));
 
         mirageWorld.clearMirageWorld();
-        fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings, RandomSource.create(), Block.UPDATE_ALL);
+        mirageWorld.setHasBlockEntities(false);
+        fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings,mirageWorld.random, Block.UPDATE_ALL);
 
         //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
         mirageWorld.setOverideRefreshBuffer(true);   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
@@ -474,13 +474,6 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         }
     }
 
-    public int clearBlocksCountDown = 500;
-
-    public void resetClearBlocksCountDown(){
-        this.clearBlocksCountDown = 500;
-    }
-    private boolean shouldClearMirageWorldBlockList = false;
-
     public static void tick(Level world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
 
         if(blockEntity.isPowered()) {
@@ -488,31 +481,6 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             mirageWorldsMap.forEach((Integer,mirageWorld)->{
                 mirageWorld.tick();
             });
-
-            if(world.isClientSide()) {
-                if (blockEntity.shouldClearMirageWorldBlockList) {
-                    int emptiedCount = 0;
-                    int mirageWorldsCount = mirageWorldsMap.size();
-                    for (int i = 0; i < mirageWorldsCount; ++i) {
-                        MirageWorld mirageWorld = mirageWorldsMap.get(i);
-                        if (mirageWorld.isBlockListReadyToBeEmptied()) {
-                            mirageWorld.clearMirageStateNEntities();
-                            mirageWorld.setBlockListReadyToBeEmptied(false);
-                            emptiedCount += 1;
-                        }
-                    }
-                    if (emptiedCount == mirageWorldsCount) {
-                        blockEntity.shouldClearMirageWorldBlockList = false;
-                    }
-                }
-
-                if (blockEntity.clearBlocksCountDown < 1) {
-                    blockEntity.shouldClearMirageWorldBlockList = true;
-                } else {
-                    blockEntity.clearBlocksCountDown = Math.max(0, blockEntity.clearBlocksCountDown - 1);
-                }
-            }
-
         }
         if(!world.isClientSide()){// note to self only update state properties in server-side
             world.setBlock(pos,state.setValue(BlockStateProperties.LIT,blockEntity.isPowered()),Block.UPDATE_ALL);
