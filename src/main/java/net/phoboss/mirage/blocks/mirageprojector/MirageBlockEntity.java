@@ -37,6 +37,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IForgeBlockEntity {
@@ -81,10 +82,13 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     public List<String> getFileNames() {
         return getBookSettingsPOJO().getFiles();
     }
-    private List<MirageWorld> mirageWorlds;
+    private ConcurrentHashMap<Integer,MirageWorld> mirageWorlds;
 
     public void resetMirageWorlds() {
         if(mirageWorlds != null){
+            mirageWorlds.forEach((integer, mirageWorld) -> {
+                mirageWorld.clearMirageWorld();
+            });
             mirageWorlds.clear();
         }
     }
@@ -92,11 +96,22 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         resetMirageWorlds();
         if(mirageWorlds != null) {
             for (int i = 0; i < count; ++i) {
-                mirageWorlds.add(new MirageWorld(world));
+                mirageWorlds.put(i,new MirageWorld(world));
             }
         }
     }public void addMirageWorld(){
-        mirageWorlds.add(new MirageWorld(this.level));
+        this.mirageWorlds.put(this.mirageWorlds.size(),new MirageWorld(this.level));
+    }
+
+    public class MirageLoader extends Thread{
+        @Override
+        public void run() {
+            try{
+                loadMirage();
+            }catch (Exception e){
+                Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
+            }
+        }
     }
 
     public void loadMirage() throws Exception{
@@ -114,6 +129,9 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             for(int i=0;i<fileCount;++i){
                 fileName = files.get(i);
                 CompoundTag buildingNBT = getBuildingNbt(fileName);
+                if(!this.mirageWorlds.containsKey(i)){
+                    continue;
+                }
                 MirageWorld mirageWorld = this.mirageWorlds.get(i);
                 Vec3i actualMove = getMove();
                 int actualRotate = getRotate();
@@ -170,10 +188,11 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         StructurePlaceSettings.setMirror(StructureStates.MIRROR_STATES.get(mirror));
 
         mirageWorld.clearMirageWorld();
-        fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings, RandomSource.create(), Block.UPDATE_ALL);
+        mirageWorld.setHasBlockEntities(false);
+        fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings,mirageWorld.random, Block.UPDATE_ALL);
 
         //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
-        mirageWorld.overideRefreshBuffer = true;   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
+        mirageWorld.setOverideRefreshBuffer(true);   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
                                                         //I could try to use @ExpectPlatform but I couldn't find anything similar for Forge either.
                                                         // So I just let the BER.render(...) method decide when's the best time to refresh the VertexBuffers :)
 
@@ -182,7 +201,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     @Override
     public void setLevel(Level world) {
         super.setLevel(world);
-        this.mirageWorlds = new ArrayList<>();
+        this.mirageWorlds = new ConcurrentHashMap<>();
     }
 
 
@@ -227,8 +246,8 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     }
 
 
-    public List<MirageWorld> getMirageWorlds() {
-        return mirageWorlds;
+    public ConcurrentHashMap<Integer,MirageWorld> getMirageWorlds() {
+        return this.mirageWorlds;
     }
 
     public MirageProjectorBook bookSettingsPOJO;
@@ -241,12 +260,16 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         this.bookSettingsPOJO = bookSettingsPOJO;
     }
 
+    public boolean newBookShouldReloadMirage(MirageProjectorBook newBookSettingsPOJO){
+        return !this.bookSettingsPOJO.getRelevantSettings().equals(newBookSettingsPOJO.getRelevantSettings());
+    }
+
     public String serializeBook() throws Exception{
         return new Gson().toJson(getBookSettingsPOJO());
     }
 
-    public void deserializeBook(String bookString) throws Exception{
-        setBookSettingsPOJO(bookString.isEmpty() ? new MirageProjectorBook() : new Gson().fromJson(bookString, MirageProjectorBook.class));
+    public MirageProjectorBook deserializeBook(String bookString) throws Exception{
+        return bookString.isEmpty() ? new MirageProjectorBook() : new Gson().fromJson(bookString, MirageProjectorBook.class);
     }
 
     @Override
@@ -264,9 +287,17 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     public void load(CompoundTag nbt) {
         super.load(nbt);
         try{
-            deserializeBook(nbt.getString("bookJSON"));
+            MirageProjectorBook newBook = deserializeBook(nbt.getString("bookJSON"));
+            boolean shouldReloadMirage = newBookShouldReloadMirage(newBook);
+            setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
-            loadMirage();
+            if(shouldReloadMirage) {
+                //loadMirage();
+                Thread mirageLoader = new MirageLoader();
+                mirageLoader.setName("MirageLoader");
+                mirageLoader.start();
+
+            }
         }catch (Exception e){
             Mirage.LOGGER.error("Error on readNBT: ",e);
         }
@@ -343,7 +374,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     public boolean isRewind(){
         return isTopPowered();
     }
-
     public RedstoneStateChecker sidesRedstoneStateChecker = new RedstoneStateChecker();
     public boolean wereSidesPowered() {
         return sidesRedstoneStateChecker.getPreviousState();
@@ -351,7 +381,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     public void savePreviousSidesPowerState(Boolean currentState) {
         sidesRedstoneStateChecker.setPreviousState(currentState);
     }
-
     public RedstoneStateChecker bottomRedstoneStateChecker = new RedstoneStateChecker();
     public boolean wasBottomPowered() {
         return bottomRedstoneStateChecker.getPreviousState();
@@ -442,11 +471,11 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         }
     }
 
-
     public static void tick(Level world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
 
         if(blockEntity.isPowered()) {
-            blockEntity.getMirageWorlds().forEach((mirageWorld)->{
+            ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
+            mirageWorldsMap.forEach((Integer,mirageWorld)->{
                 mirageWorld.tick();
             });
         }

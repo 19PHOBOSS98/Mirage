@@ -43,11 +43,13 @@ public class MirageImmediate implements MultiBufferSource {
         return mirageBufferBuilder;
     }
 
-
-
     public Object2ObjectLinkedOpenHashMap<RenderType, MirageBufferBuilder> getLayerBuffers(){
         return layerBuffers;
     }
 
-
+    public void reset(){
+        layerBuffers.forEach(((renderType, mirageBufferBuilder) -> {
+            mirageBufferBuilder.clear();
+        }));
+    }
 }
