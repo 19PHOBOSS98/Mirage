@@ -2,6 +2,7 @@ package net.phoboss.mirage.client.rendering.customworld;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
@@ -60,10 +61,9 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
 import net.minecraftforge.fml.ModList;
-import net.phoboss.decobeacon.blocks.decobeacon.DecoBeaconBlock;
+import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import org.jetbrains.annotations.Nullable;
 import xfacthd.framedblocks.api.block.FramedBlockEntity;
 
@@ -145,20 +145,30 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     protected Long2ObjectOpenHashMap<BlockWEntity> bERBlocksList;
     private MirageBufferStorage mirageBufferStorage;
 
+    public boolean isVertexBufferBlocksListPopulated(){
+        return !this.vertexBufferBlocksList.isEmpty();
+    }
 
 
     public boolean newlyRefreshedBuffers = true;
     public boolean overideRefreshBuffer = true;
+
+    public boolean getOverideRefreshBuffer(){
+        return this.overideRefreshBuffer;
+    }
+    public void setOverideRefreshBuffer(boolean overide){
+        this.overideRefreshBuffer = overide;
+    }
 
     public static void refreshVertexBuffersIfNeeded(BlockPos projectorPos, MirageWorld mirageWorld){
         boolean shadersEnabled = false;
         if(ModList.get().isLoaded("oculus")){
             shadersEnabled = IrisApi.getInstance().getConfig().areShadersEnabled();
         }
-        if(shadersEnabled && mirageWorld.newlyRefreshedBuffers || mirageWorld.overideRefreshBuffer){
+        if(shadersEnabled && mirageWorld.newlyRefreshedBuffers || mirageWorld.getOverideRefreshBuffer()){
             mirageWorld.initVertexBuffers(projectorPos);
             mirageWorld.newlyRefreshedBuffers = false;
-            mirageWorld.overideRefreshBuffer = false;
+            mirageWorld.setOverideRefreshBuffer(false);
         }
         if(!shadersEnabled){
             mirageWorld.newlyRefreshedBuffers = true;
@@ -195,21 +205,25 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             matrices.popPose();
         });
 
-        PoseStack matrixStack = RenderSystem.getModelViewStack();
-        matrixStack.pushPose();
-        matrixStack.mulPoseMatrix(matrices.last().pose());
+        Matrix4f matrixView = RenderSystem.getModelViewMatrix().copy();
+        matrixView.multiply(matrices.last().pose().copy());
         this.mirageBufferStorage.mirageVertexBuffers.forEach((renderLayer,vertexBuffer)->{
             renderLayer.setupRenderState();
-            vertexBuffer.drawWithShader(matrixStack.last().pose(), RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
+            vertexBuffer.bind();
+            vertexBuffer.drawWithShader(matrixView, RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
             renderLayer.clearRenderState();
         });
-        matrixStack.popPose();
 
         markAnimatedSprite(this.animatedSprites);
     }
 
-    public void initVertexBuffers(BlockPos projectorPos) {
+    public void resetMirageBufferStorage(){
         this.mirageBufferStorage.reset();
+    }
+
+    public void initVertexBuffers(BlockPos projectorPos) {
+
+        resetMirageBufferStorage();
         PoseStack matrices = new PoseStack();
         MirageImmediate vertexConsumers = this.mirageBufferStorage.getMirageImmediate();
 
@@ -272,8 +286,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         This ensures that it is safe to clear out the mirageStateNEntities.
         Otherwise we would empty it out too soon and not populate the vertexBufferBlocksList.
          */
-        if(!this.vertexBufferBlocksList.isEmpty()){
-            this.mirageStateNEntities.clear();
+        if(isVertexBufferBlocksListPopulated() && !hasBlockEntities()){//Mirage BlockEntities also need this to check for neighboring block states
+            clearMirageStateNEntities();
         }
         this.mirageBufferStorage.uploadBufferBuildersToVertexBuffers(vertexConsumers);
 
@@ -368,9 +382,13 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         return false;
     }
 
+    public void clearMirageStateNEntities(){
+        this.mirageStateNEntities.clear();
+    }
+
     public void clearMirageWorld(){
         synchronized (this.mirageStateNEntities){
-            this.mirageStateNEntities.clear();
+            clearMirageStateNEntities();
         }
         synchronized (this.bERBlocksList){
             this.bERBlocksList.clear();
@@ -383,9 +401,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         }
         synchronized (this.manualEntityList){
             this.manualEntityList.clear();
-        }
-        synchronized (this.mirageBufferStorage){
-            this.mirageBufferStorage.reset();
         }
         synchronized (this.mirageBlockEntityTickers){
             this.mirageBlockEntityTickers.clear();
@@ -428,6 +443,16 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         this.manualEntityList.put(blockPosKey,new StateNEntity(entity));
     }
 
+    public boolean hasBlockEntities = false;
+
+    public boolean hasBlockEntities() {
+        return hasBlockEntities;
+    }
+
+    public void setHasBlockEntities(boolean hasBlockEntities) {
+        this.hasBlockEntities = hasBlockEntities;
+    }
+
     public void initBlockRenderLists() {
         this.mirageStateNEntities.forEach((blockPosKey,stateNEntity)->{
             BlockState blockState = stateNEntity.blockState;
@@ -441,6 +466,11 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                 return;
             }
             if(blockEntity != null) {
+                if(blockEntity instanceof MirageBlockEntity){
+                    return;//recursive mirages are unsafe
+                }
+
+                setHasBlockEntities(true);
                 if (blockEntityRenderDispatcher.getRenderer(blockEntity)!=null) {
                     this.bERBlocksList.put(blockPosKey,new BlockWEntity(blockState,blockEntity));
                 }

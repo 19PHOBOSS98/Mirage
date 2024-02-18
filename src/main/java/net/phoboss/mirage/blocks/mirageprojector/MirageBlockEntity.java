@@ -89,6 +89,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
 
     public void resetMirageWorlds() {
         if(mirageWorlds != null){
+            mirageWorlds.forEach((integer, mirageWorld) -> {
+                mirageWorld.clearMirageWorld();
+            });
             mirageWorlds.clear();
         }
     }
@@ -129,6 +132,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             for(int i=0;i<fileCount;++i){
                 fileName = files.get(i);
                 CompoundTag buildingNBT = getBuildingNbt(fileName);
+                if(!this.mirageWorlds.containsKey(i)){
+                    continue;
+                }
                 MirageWorld mirageWorld = this.mirageWorlds.get(i);
                 Vec3i actualMove = getMove();
                 int actualRotate = getRotate();
@@ -185,10 +191,11 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         StructurePlaceSettings.setMirror(StructureStates.MIRROR_STATES.get(mirror));
 
         mirageWorld.clearMirageWorld();
+        mirageWorld.setHasBlockEntities(false);
         fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings,mirageWorld.random, Block.UPDATE_ALL);
 
         //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
-        mirageWorld.overideRefreshBuffer = true;   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
+        mirageWorld.setOverideRefreshBuffer(true);   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
                                                         //I could try to use @ExpectPlatform but I couldn't find anything similar for Forge either.
                                                         // So I just let the BER.render(...) method decide when's the best time to refresh the VertexBuffers :)
 
@@ -256,7 +263,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         this.bookSettingsPOJO = bookSettingsPOJO;
     }
 
-    public boolean shouldReloadMirage(MirageProjectorBook newBookSettingsPOJO){
+    public boolean newBookShouldReloadMirage(MirageProjectorBook newBookSettingsPOJO){
         return !this.bookSettingsPOJO.getRelevantSettings().equals(newBookSettingsPOJO.getRelevantSettings());
     }
 
@@ -284,7 +291,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         super.load(nbt);
         try{
             MirageProjectorBook newBook = deserializeBook(nbt.getString("bookJSON"));
-            boolean shouldReloadMirage = shouldReloadMirage(newBook);
+            boolean shouldReloadMirage = newBookShouldReloadMirage(newBook);
             setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
             if(shouldReloadMirage) {
@@ -467,11 +474,11 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         }
     }
 
-
     public static void tick(Level world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
 
         if(blockEntity.isPowered()) {
-            blockEntity.getMirageWorlds().forEach((Integer,mirageWorld)->{
+            ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
+            mirageWorldsMap.forEach((Integer,mirageWorld)->{
                 mirageWorld.tick();
             });
         }
