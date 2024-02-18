@@ -16,12 +16,11 @@ public class MirageBufferStorage {
 
     public static List<RenderType> DEFAULT_RENDER_LAYERS = getDefaultRenderLayers();
 
-    public Object2ObjectLinkedOpenHashMap<RenderType, MirageBufferBuilder> defaultBuffers = getDefaultBuffers();
-
-    public MirageImmediate mirageImmediate = new MirageImmediate(defaultBuffers);
+    public MirageImmediate mirageImmediate;
 
     public MirageBufferStorage() {
         mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
+        mirageImmediate = new MirageImmediate(getDefaultBuffers());
     }
 
     public Object2ObjectLinkedOpenHashMap<RenderType, MirageBufferBuilder> getDefaultBuffers(){

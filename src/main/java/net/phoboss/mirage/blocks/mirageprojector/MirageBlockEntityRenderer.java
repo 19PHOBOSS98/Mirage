@@ -3,6 +3,8 @@ package net.phoboss.mirage.blocks.mirageprojector;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -12,10 +14,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib3.model.AnimatedGeoModel;
 import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -25,10 +25,17 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
     }
 
     @Override
-    public void renderLate(MirageBlockEntity blockEntity, PoseStack poseStack, float partialTick, MultiBufferSource bufferSource, VertexConsumer buffer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        super.renderLate(animatable, poseStack, partialTick, bufferSource, buffer, packedLight, packedOverlay, red, green, blue, alpha);
+    public void render(MirageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+        super.render(blockEntity, partialTick, poseStack, bufferSource, packedLight);
+
         boolean isPowered = blockEntity.isPowered();
         if(!isPowered) {
+            return;
+        }
+
+        ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
+        int mirageListLength = mirageWorldList.size();
+        if(mirageListLength < 1){
             return;
         }
 
@@ -36,7 +43,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         boolean areSidesPowered = blockEntity.areSidesPowered();
 
-        ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
+
         if(mirageWorldList.isEmpty()) {
             blockEntity.savePreviousTopPowerState(isTopPowered);
             blockEntity.savePreviousBottomPowerState(isPowered);
@@ -47,14 +54,14 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         if(mirageProjectorBook.isAutoPlay()) {
             if(!blockEntity.isPause()) {
-                blockEntity.nextMirageWorldIndex(mirageWorldList.size());
+                blockEntity.nextMirageWorldIndex(mirageListLength);
             }
         }else{
             if(blockEntity.isStepping()){
-                blockEntity.nextBookStep(mirageWorldList.size());
+                blockEntity.nextBookStep(mirageListLength);
             }
             //blockEntity.setMirageWorldIndex(Math.abs(Math.max(0,Math.min(mirageProjectorBook.getStep(),mirageWorldList.size()-1))));
-            blockEntity.setMirageWorldIndex(Math.abs(mirageProjectorBook.getStep()) % mirageWorldList.size());//better-ish clamping function for manual book step setting
+            blockEntity.setMirageWorldIndex(Math.abs(mirageProjectorBook.getStep()) % mirageListLength);//better-ish clamping function for manual book step setting
         }
 
         int mirageWorldIndex = blockEntity.getMirageWorldIndex();
@@ -63,7 +70,10 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         if (mirageWorld != null) {
             BlockPos projectorPos = blockEntity.getBlockPos();
+            //poseStack.pushPose();
+            //poseStack.mulPose(new Quaternion(new Vector3f(0,0,1),45,true));
             mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
+            //poseStack.popPose();
         }
 
         blockEntity.savePreviousTopPowerState(isTopPowered);
@@ -77,12 +87,12 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
     }
 
     @Override
-    public RenderType getRenderType(MirageBlockEntity animatable, float partialTick, PoseStack poseStack, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, int packedLight, ResourceLocation texture) {
-        return RenderType.entityTranslucent(getTextureLocation(animatable));
+    public boolean shouldRender(BlockEntity pBlockEntity, Vec3 pCameraPos) {
+        return true;
     }
 
     @Override
-    public int getViewDistance() {
-        return 512;
+    public RenderType getRenderType(MirageBlockEntity animatable, float partialTick, PoseStack poseStack, @Nullable MultiBufferSource bufferSource, @Nullable VertexConsumer buffer, int packedLight, ResourceLocation texture) {
+        return RenderType.entityTranslucent(getTextureLocation(animatable));
     }
 }

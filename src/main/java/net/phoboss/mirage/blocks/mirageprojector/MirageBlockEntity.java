@@ -38,7 +38,6 @@ import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,6 +89,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
 
     public void resetMirageWorlds() {
         if(mirageWorlds != null){
+            mirageWorlds.forEach((integer, mirageWorld) -> {
+                mirageWorld.clearMirageWorld();
+            });
             mirageWorlds.clear();
         }
     }
@@ -130,6 +132,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             for(int i=0;i<fileCount;++i){
                 fileName = files.get(i);
                 CompoundTag buildingNBT = getBuildingNbt(fileName);
+                if(!this.mirageWorlds.containsKey(i)){
+                    continue;
+                }
                 MirageWorld mirageWorld = this.mirageWorlds.get(i);
                 Vec3i actualMove = getMove();
                 int actualRotate = getRotate();
@@ -164,6 +169,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                 actualRotate %= 360;
                 loadMirage(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
             }
+            resetClearBlocksCountDown();
         }catch (Exception e) {
             throw new Exception("Couldn't read nbt file: "+fileName,e);
         }
@@ -189,7 +195,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings, RandomSource.create(), Block.UPDATE_ALL);
 
         //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
-        mirageWorld.overideRefreshBuffer = true;   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
+        mirageWorld.setOverideRefreshBuffer(true);   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
                                                         //I could try to use @ExpectPlatform but I couldn't find anything similar for Forge either.
                                                         // So I just let the BER.render(...) method decide when's the best time to refresh the VertexBuffers :)
 
@@ -257,7 +263,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         this.bookSettingsPOJO = bookSettingsPOJO;
     }
 
-    public boolean shouldReloadMirage(MirageProjectorBook newBookSettingsPOJO){
+    public boolean newBookShouldReloadMirage(MirageProjectorBook newBookSettingsPOJO){
         return !this.bookSettingsPOJO.getRelevantSettings().equals(newBookSettingsPOJO.getRelevantSettings());
     }
 
@@ -285,7 +291,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         super.load(nbt);
         try{
             MirageProjectorBook newBook = deserializeBook(nbt.getString("bookJSON"));
-            boolean shouldReloadMirage = shouldReloadMirage(newBook);
+            boolean shouldReloadMirage = newBookShouldReloadMirage(newBook);
             setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
             if(shouldReloadMirage) {
@@ -468,13 +474,45 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         }
     }
 
+    public int clearBlocksCountDown = 500;
+
+    public void resetClearBlocksCountDown(){
+        this.clearBlocksCountDown = 500;
+    }
+    private boolean shouldClearMirageWorldBlockList = false;
 
     public static void tick(Level world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
 
         if(blockEntity.isPowered()) {
-            blockEntity.getMirageWorlds().forEach((Integer,mirageWorld)->{
+            ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
+            mirageWorldsMap.forEach((Integer,mirageWorld)->{
                 mirageWorld.tick();
             });
+
+            if(world.isClientSide()) {
+                if (blockEntity.shouldClearMirageWorldBlockList) {
+                    int emptiedCount = 0;
+                    int mirageWorldsCount = mirageWorldsMap.size();
+                    for (int i = 0; i < mirageWorldsCount; ++i) {
+                        MirageWorld mirageWorld = mirageWorldsMap.get(i);
+                        if (mirageWorld.isBlockListReadyToBeEmptied()) {
+                            mirageWorld.clearMirageStateNEntities();
+                            mirageWorld.setBlockListReadyToBeEmptied(false);
+                            emptiedCount += 1;
+                        }
+                    }
+                    if (emptiedCount == mirageWorldsCount) {
+                        blockEntity.shouldClearMirageWorldBlockList = false;
+                    }
+                }
+
+                if (blockEntity.clearBlocksCountDown < 1) {
+                    blockEntity.shouldClearMirageWorldBlockList = true;
+                } else {
+                    blockEntity.clearBlocksCountDown = Math.max(0, blockEntity.clearBlocksCountDown - 1);
+                }
+            }
+
         }
         if(!world.isClientSide()){// note to self only update state properties in server-side
             world.setBlock(pos,state.setValue(BlockStateProperties.LIT,blockEntity.isPowered()),Block.UPDATE_ALL);
