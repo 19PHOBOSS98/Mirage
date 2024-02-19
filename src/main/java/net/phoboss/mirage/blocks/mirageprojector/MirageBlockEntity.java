@@ -5,7 +5,6 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -90,6 +89,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
             });
             mirageWorlds.clear();
         }
+        System.gc();
     }
     public void resetMirageWorlds(World world, int count){
         resetMirageWorlds();
@@ -113,6 +113,12 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         }
     }
 
+    public void stopMirageLoader(){
+        if(!this.mirageLoader.isInterrupted()){
+            this.mirageLoader.interrupt();
+        }
+    }
+
     public void loadMirage() throws Exception{
         if(this.mirageWorlds == null){
             return;
@@ -126,12 +132,18 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
             HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
             for(int i=0;i<fileCount;++i){
-                fileName = files.get(i);
-                NbtCompound buildingNBT = getBuildingNbt(fileName);
+                if(Thread.currentThread().isInterrupted()){
+                    throw new InterruptedException();
+                }
+
                 if(!this.mirageWorlds.containsKey(i)){
                     continue;
                 }
                 MirageWorld mirageWorld = this.mirageWorlds.get(i);
+
+                fileName = files.get(i);
+                NbtCompound buildingNBT = getBuildingNbt(fileName);
+
                 Vec3i actualMove = getMove();
                 int actualRotate = getRotate();
                 String actualMirror = getMirror();
@@ -140,7 +152,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
                 if(frames.containsKey(i)){
                     frame = frames.get(i);
                 }else{
-                    loadMirage(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
+                    loadMirageWorld(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
                     continue;
                 }
 
@@ -163,13 +175,17 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
                 }
 
                 actualRotate %= 360;
-                loadMirage(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
+                loadMirageWorld(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
             }
-        }catch (Exception e) {
+        }catch (InterruptedException e) {
+            resetMirageWorlds();
+            throw new Exception("MirageLoader thread was interrupted...",e);
+        }
+        catch (Exception e) {
             throw new Exception("Couldn't read nbt file: "+fileName,e);
         }
     }
-    public void loadMirage(MirageWorld mirageWorld, NbtCompound nbt, Vec3i move, int rotate, String mirror) {
+    public void loadMirageWorld(MirageWorld mirageWorld, NbtCompound nbt, Vec3i move, int rotate, String mirror) {
         if(!world.isClient()) {
             return;
         }
@@ -282,6 +298,8 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         super.writeNbt(nbt);
     }
 
+    public MirageLoader mirageLoader = new MirageLoader();
+
     @Override
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
@@ -292,9 +310,9 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
             if(shouldReloadMirage) {
                 //loadMirage();
-                Thread mirageLoader = new MirageLoader();
-                mirageLoader.setName("MirageLoader");
-                mirageLoader.start();
+                this.mirageLoader = new MirageLoader();
+                this.mirageLoader.setName("MirageLoader");
+                this.mirageLoader.start();
 
             }
         }catch (Exception e){
@@ -317,7 +335,9 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
 
     @Override
     public void markDirty() {
-        world.updateListeners(getPos(), getCachedState(), getCachedState(), Block.NOTIFY_ALL);
+        if(!(this.world instanceof MirageWorld)) {//"Accessing OpenGL functions from outside the main render thread is not supported when using Sodium"
+            this.world.updateListeners(getPos(), getCachedState(), getCachedState(), Block.NOTIFY_ALL);
+        }
         super.markDirty();
     }
     public boolean isReverse(){

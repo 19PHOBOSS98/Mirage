@@ -51,6 +51,16 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
     }
 
     @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        super.onBreak(world, pos, state, player);
+        if(world.isClient()) {
+            MirageBlockEntity blockEntity = (MirageBlockEntity) world.getBlockEntity(pos);
+            blockEntity.stopMirageLoader();
+        }
+        System.gc();
+    }
+
+    @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
             ItemStack mainHandItemStack = player.getMainHandStack();
             Item mainHandItem = player.getMainHandStack().getItem();

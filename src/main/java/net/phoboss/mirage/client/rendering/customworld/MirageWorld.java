@@ -97,6 +97,10 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
     protected ChunkManager chunkManager;
 
+    public World getWorld() {
+        return this.world;
+    }
+
 
     public static class StateNEntity {
         public BlockState blockState;
@@ -475,10 +479,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
                 return;
             }
             if(blockEntity != null) {
-                if(blockEntity instanceof MirageBlockEntity){
-                    return;//recursive mirages are unsafe
-                }
-
                 setHasBlockEntities(true);
                 if (blockEntityRenderDispatcher.get(blockEntity)!=null) {
                     this.bERBlocksList.put(blockPosKey,new BlockWEntity(blockState,blockEntity));
