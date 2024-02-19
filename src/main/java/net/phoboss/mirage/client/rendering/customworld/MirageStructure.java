@@ -55,24 +55,6 @@ public class MirageStructure extends StructureTemplate {
         }
     }
 
-    /*@Override
-    public void readNbt(NbtCompound nbt) {
-        super.readNbt(nbt);
-        NbtList entitiesNbt = nbt.getList("entities", 10);
-        for(int j = 0; j < entitiesNbt.size(); ++j) {
-            NbtCompound compoundtag = entitiesNbt.getCompound(j);
-            NbtList listtag3 = compoundtag.getList("pos", 6);
-            Vec3d vec3 = new Vec3d(listtag3.getDouble(0), listtag3.getDouble(1), listtag3.getDouble(2));
-            NbtList listtag4 = compoundtag.getList("blockPos", 3);
-            BlockPos blockpos = new BlockPos(listtag4.getInt(0), listtag4.getInt(1), listtag4.getInt(2));
-            if (compoundtag.contains("nbt")) {
-                NbtCompound compoundtag1 = compoundtag.getCompound("nbt");
-                this.mirageEntities.add(new StructureEntityInfo(vec3, blockpos, compoundtag1));
-            }
-        }
-    }*/
-
-
     @Override
     public boolean place(ServerWorldAccess world, BlockPos pos, BlockPos pivot, StructurePlacementData placementData, net.minecraft.util.math.random.Random random, int flags) {
         boolean ignoreEntities = placementData.shouldIgnoreEntities();

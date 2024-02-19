@@ -36,6 +36,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
@@ -80,10 +81,13 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     public List<String> getFileNames() {
         return getBookSettingsPOJO().getFiles();
     }
-    private List<MirageWorld> mirageWorlds;
+    private ConcurrentHashMap<Integer,MirageWorld> mirageWorlds;
 
     public void resetMirageWorlds() {
         if(mirageWorlds != null){
+            mirageWorlds.forEach((integer, mirageWorld) -> {
+                mirageWorld.clearMirageWorld();
+            });
             mirageWorlds.clear();
         }
     }
@@ -91,7 +95,20 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         resetMirageWorlds();
         if(mirageWorlds != null) {
             for (int i = 0; i < count; ++i) {
-                mirageWorlds.add(new MirageWorld(world));
+                mirageWorlds.put(i,new MirageWorld(world));
+            }
+        }
+    }public void addMirageWorld(){
+        this.mirageWorlds.put(this.mirageWorlds.size(),new MirageWorld(this.world));
+    }
+
+    public class MirageLoader extends Thread{
+        @Override
+        public void run() {
+            try{
+                loadMirage();
+            }catch (Exception e){
+                Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
             }
         }
     }
@@ -104,13 +121,16 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         try {
             List<String> files = getFileNames();
             int fileCount = files.size();
-            resetMirageWorlds(world, fileCount);
+            resetMirageWorlds(this.world, fileCount);
 
             HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
             for(int i=0;i<fileCount;++i){
                 fileName = files.get(i);
                 NbtCompound buildingNBT = getBuildingNbt(fileName);
+                if(!this.mirageWorlds.containsKey(i)){
+                    continue;
+                }
                 MirageWorld mirageWorld = this.mirageWorlds.get(i);
                 Vec3i actualMove = getMove();
                 int actualRotate = getRotate();
@@ -167,10 +187,11 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         structurePlacementData.setMirror(StructureStates.MIRROR_STATES.get(mirror));
 
         mirageWorld.clearMirageWorld();
+        mirageWorld.setHasBlockEntities(false);
         fakeStructure.place(mirageWorld,pos,pos,structurePlacementData,mirageWorld.random,Block.NOTIFY_ALL);
 
         //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
-        mirageWorld.overideRefreshBuffer = true;   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
+        mirageWorld.setOverideRefreshBuffer(true);   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
                                                         //I could try to use @ExpectPlatform but I couldn't find anything similar for Forge either.
                                                         // So I just let the BER.render(...) method decide when's the best time to refresh the VertexBuffers :)
 
@@ -179,7 +200,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     @Override
     public void setWorld(World world) {
         super.setWorld(world);
-        this.mirageWorlds = new ArrayList<>();
+        this.mirageWorlds = new ConcurrentHashMap<>();
     }
 
 
@@ -224,8 +245,8 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     }
 
 
-    public List<MirageWorld> getMirageWorlds() {
-        return mirageWorlds;
+    public ConcurrentHashMap<Integer,MirageWorld> getMirageWorlds() {
+        return this.mirageWorlds;
     }
 
     public MirageProjectorBook bookSettingsPOJO;
@@ -238,12 +259,16 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         this.bookSettingsPOJO = bookSettingsPOJO;
     }
 
+    public boolean newBookShouldReloadMirage(MirageProjectorBook newBookSettingsPOJO){
+        return !this.bookSettingsPOJO.getRelevantSettings().equals(newBookSettingsPOJO.getRelevantSettings());
+    }
+
     public String serializeBook() throws Exception{
         return new Gson().toJson(getBookSettingsPOJO());
     }
 
-    public void deserializeBook(String bookString) throws Exception{
-        setBookSettingsPOJO(bookString.isEmpty() ? new MirageProjectorBook() : new Gson().fromJson(bookString, MirageProjectorBook.class));
+    public MirageProjectorBook deserializeBook(String bookString) throws Exception{
+        return bookString.isEmpty() ? new MirageProjectorBook() : new Gson().fromJson(bookString, MirageProjectorBook.class);
     }
 
     @Override
@@ -261,14 +286,21 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     public void readNbt(NbtCompound nbt) {
         super.readNbt(nbt);
         try{
-            deserializeBook(nbt.getString("bookJSON"));
+            MirageProjectorBook newBook = deserializeBook(nbt.getString("bookJSON"));
+            boolean shouldReloadMirage = newBookShouldReloadMirage(newBook);
+            setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
-            loadMirage();
+            if(shouldReloadMirage) {
+                //loadMirage();
+                Thread mirageLoader = new MirageLoader();
+                mirageLoader.setName("MirageLoader");
+                mirageLoader.start();
+
+            }
         }catch (Exception e){
             Mirage.LOGGER.error("Error on readNBT: ",e);
         }
     }
-
 
     @Nullable
     @Override
@@ -340,7 +372,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     public boolean isRewind(){
         return isTopPowered();
     }
-
     public RedstoneStateChecker sidesRedstoneStateChecker = new RedstoneStateChecker();
     public boolean wereSidesPowered() {
         return sidesRedstoneStateChecker.getPreviousState();
@@ -348,7 +379,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     public void savePreviousSidesPowerState(Boolean currentState) {
         sidesRedstoneStateChecker.setPreviousState(currentState);
     }
-
     public RedstoneStateChecker bottomRedstoneStateChecker = new RedstoneStateChecker();
     public boolean wasBottomPowered() {
         return bottomRedstoneStateChecker.getPreviousState();
@@ -439,11 +469,11 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         }
     }
 
-
     public static void tick(World world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
 
         if(blockEntity.isPowered()) {
-            blockEntity.getMirageWorlds().forEach((mirageWorld)->{
+            ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
+            mirageWorldsMap.forEach((Integer,mirageWorld)->{
                 mirageWorld.tick();
             });
         }
@@ -454,25 +484,22 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     }
 
     private AnimatableInstanceCache cache = new SingletonAnimatableInstanceCache(this);
-
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "controller", 0, this::predicate));
-        
     }
 
     private <T extends GeoAnimatable> PlayState predicate(AnimationState<T> geoAnimatableAnimationState) {
         MirageBlockEntity subject = (MirageBlockEntity) geoAnimatableAnimationState.getAnimatable();
         AnimationController controller = geoAnimatableAnimationState.getController();
-
         if(subject.isPowered()&&!subject.wasBottomPowered()){
             controller.setAnimation(RawAnimation.begin().then("ramp_up", Animation.LoopType.PLAY_ONCE));
             return PlayState.CONTINUE;
-        }else if(!subject.isPowered() && subject.wasBottomPowered()){
+        }
+        else if(!subject.isPowered() && subject.wasBottomPowered()){
             controller.setAnimation(RawAnimation.begin().then("ramp_down", Animation.LoopType.PLAY_ONCE));
             return PlayState.CONTINUE;
         }
-
         if(controller.getAnimationState() != AnimationController.State.STOPPED) {
             return PlayState.CONTINUE;
         }

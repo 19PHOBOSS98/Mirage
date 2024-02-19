@@ -9,21 +9,27 @@ import net.minecraft.client.render.TexturedRenderLayers;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class MirageBufferStorage {
     public Object2ObjectLinkedOpenHashMap<RenderLayer, VertexBuffer> mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
 
+    public static List<RenderLayer> DEFAULT_RENDER_LAYERS = getDefaultRenderLayers();
+
+    public MirageImmediate mirageImmediate;
+
     public MirageBufferStorage() {
-        reset();
+        mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
+        mirageImmediate = new MirageImmediate(getDefaultBuffers());
     }
 
     public Object2ObjectLinkedOpenHashMap<RenderLayer, MirageBufferBuilder> getDefaultBuffers(){
         Object2ObjectLinkedOpenHashMap<RenderLayer, MirageBufferBuilder> map = new Object2ObjectLinkedOpenHashMap<>();
-        getDefaultRenderLayers().forEach((renderLayer)->{
+        for(RenderLayer renderLayer : DEFAULT_RENDER_LAYERS){
             map.put(renderLayer,new MirageBufferBuilder(renderLayer.getExpectedBufferSize()));
-        });
+        }
         return map;
     }
-    public List<RenderLayer> getDefaultRenderLayers(){
+    public static List<RenderLayer> getDefaultRenderLayers(){
         List<RenderLayer> layers = new ArrayList<>();
         layers.add(TexturedRenderLayers.getEntitySolid());
         layers.add(TexturedRenderLayers.getEntityCutout());
@@ -70,10 +76,13 @@ public class MirageBufferStorage {
     }
 
     public void reset() {
-        this.mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
+        this.mirageVertexBuffers.forEach(((renderLayer, vertexBuffer) -> {
+            vertexBuffer.close();//Should only be called from "renderThread"
+        }));
     }
 
     public MirageImmediate getMirageImmediate(){
-        return new MirageImmediate(getDefaultBuffers());
+        mirageImmediate.reset();
+        return mirageImmediate;
     }
 }

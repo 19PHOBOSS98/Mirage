@@ -48,5 +48,9 @@ public class MirageImmediate implements VertexConsumerProvider {
         return layerBuffers;
     }
 
-
+    public void reset(){
+        layerBuffers.forEach(((renderType, mirageBufferBuilder) -> {
+            mirageBufferBuilder.clear();
+        }));
+    }
 }

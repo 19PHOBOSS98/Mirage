@@ -80,6 +80,7 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
         return ActionResult.PASS;
     }
 
+
     @Override
     public void customJSONParsingValidation(JsonObject settingsJSON,boolean override) throws Exception {
         if(override){
