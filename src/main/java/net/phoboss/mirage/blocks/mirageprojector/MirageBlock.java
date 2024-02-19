@@ -10,7 +10,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -21,6 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.blocks.ModBlockEntities;
@@ -56,6 +59,27 @@ public class MirageBlock extends BaseEntityBlock implements EntityBlock, BookSet
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.ENTITYBLOCK_ANIMATED;
     }
+
+    public void onBlockDestruction(Level pLevel, BlockPos pPos){
+        if(pLevel.isClientSide()) {
+            MirageBlockEntity blockEntity = (MirageBlockEntity) pLevel.getBlockEntity(pPos);
+            blockEntity.stopMirageLoader();
+        }
+        //System.gc();
+    }
+
+    @Override
+    public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
+        super.playerWillDestroy(pLevel, pPos, pState, pPlayer);
+        onBlockDestruction(pLevel, pPos);
+    }
+
+    @Override
+    public void wasExploded(Level pLevel, BlockPos pPos, Explosion pExplosion) {
+        super.wasExploded(pLevel, pPos, pExplosion);
+        onBlockDestruction(pLevel, pPos);
+    }
+
 
     @Override
     public InteractionResult use(BlockState pState, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult pHit) {

@@ -39,7 +39,6 @@ public class MirageStructure extends StructureTemplate {
     public void load(CompoundTag nbt) {
         load(BuiltInRegistries.BLOCK.asLookup(), nbt);
     }
-
     @Override
     public void load(HolderGetter<Block> holderGetter, CompoundTag nbt) {
         super.load(holderGetter, nbt);
@@ -59,8 +58,10 @@ public class MirageStructure extends StructureTemplate {
 
     @Override
     public boolean placeInWorld(ServerLevelAccessor world, BlockPos pos, BlockPos pivot, StructurePlaceSettings placementData, RandomSource random, int flags) {
+        boolean ignoreEntities = placementData.isIgnoreEntities();
+        placementData.setIgnoreEntities(true);
         boolean result =  super.placeInWorld(world, pos, pivot, placementData, random, flags);
-
+        placementData.setIgnoreEntities(ignoreEntities);
         if (!placementData.isIgnoreEntities()) {
             spawnEntities((Level)world, pos,placementData.getMirror(),placementData.getRotation(),placementData.getRotationPivot(),placementData.getBoundingBox(), placementData.shouldFinalizeEntities());
         }
