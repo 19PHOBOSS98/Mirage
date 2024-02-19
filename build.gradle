@@ -54,14 +54,17 @@ dependencies {
 	implementation 'org.joml:joml:1.10.5'
 	implementation "io.github.douira:glsl-transformer:2.0.0"
 	implementation "org.anarres:jcpp:1.4.14"
-	modRuntimeOnly "maven.modrinth:iris:1.6.16+1.20.1"
-	modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.8"
+
 
 	modCompileOnlyApi "maven.modrinth:iris:1.6.16+1.20.1"
 	modCompileOnlyApi "maven.modrinth:sodium:mc1.20.1-0.5.8"
 
 
 	modCompileOnlyApi "net.phoboss:decobeacons:0.0.1-1.20.1-Fabric"
+
+	modRuntimeOnly "maven.modrinth:iris:1.6.16+1.20.1"
+	modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.8"
+
 	modRuntimeOnly "net.phoboss:decobeacons:0.0.1-1.20.1-Fabric"
 
 	modRuntimeOnly "maven.modrinth:open-simple-frames:1.2.0" //https://modrinth.com/mod/open-simple-frames/version/RbIlcuU7
