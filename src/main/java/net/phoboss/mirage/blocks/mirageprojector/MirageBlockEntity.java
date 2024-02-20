@@ -81,6 +81,12 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     public List<String> getFileNames() {
         return getBookSettingsPOJO().getFiles();
     }
+
+    public void freeMirageWorldMemory(int mirageWorldCount){//MirageBufferBuilders need to be freed else we experience an OutOfMemoryError
+        if(mirageWorldCount>10){
+            System.gc();
+        }
+    }
     private ConcurrentHashMap<Integer,MirageWorld> mirageWorlds;
 
     public void resetMirageWorlds() {
@@ -90,18 +96,16 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             });
             mirageWorlds.clear();
         }
-        //System.gc();
     }
-    public void resetMirageWorlds(Level world, int count){
+    public void resetMirageWorlds(int count){
         resetMirageWorlds();
-        if(mirageWorlds != null) {
+        freeMirageWorldMemory(count);
+        /*if(mirageWorlds != null) {
             for (int i = 0; i < count; ++i) {
                 mirageWorlds.put(i,new MirageWorld(world));
+                Thread.currentThread().sleep(1000);
             }
-        }
-    }
-    public void addMirageWorld(){
-        this.mirageWorlds.put(this.mirageWorlds.size(),new MirageWorld(this.level));
+        }*/
     }
 
     //I would try to use more threads to load in multiple mirage-frames all at once but each thread would require a lot of memory... too much for the computer to provide all at once
@@ -116,7 +120,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         }catch (Exception e){
             Mirage.LOGGER.error("Error on mirageLoader.interrupt()",e);
         }
-        resetMirageWorlds();
+
     }
 
     public void executeNewMirageLoaderTask(){
@@ -134,7 +138,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         public void run() {
             try{
                 loadMirage();
-                //System.gc();
             }catch (Exception e){
                 Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
             }
@@ -152,7 +155,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         try {
             List<String> files = getFileNames();
             fileCount = files.size();
-            resetMirageWorlds(this.level,fileCount);
+            resetMirageWorlds(fileCount);
 
             HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
@@ -160,9 +163,9 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
                 if(Thread.currentThread().isInterrupted()){
                     throw new InterruptedException();
                 }
-                if(!this.mirageWorlds.containsKey(i)){
-                    continue;
-                }
+                Thread.currentThread().sleep(1000);
+                this.mirageWorlds.put(i,new MirageWorld(this.level));
+
                 MirageWorld mirageWorld = this.mirageWorlds.get(i);
 
                 fileName = files.get(i);
@@ -201,8 +204,10 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
                 actualRotate %= 360;
                 loadMirageWorld(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
             }
+            freeMirageWorldMemory(fileCount);
         }catch (InterruptedException e) {
             resetMirageWorlds();
+            freeMirageWorldMemory(fileCount);
             throw new Exception("MirageLoader thread was interrupted..."+fileCount,e);
         }
         catch (Exception e) {
@@ -332,7 +337,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             boolean shouldReloadMirage = newBookShouldReloadMirage(newBook);
             setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
-            if(shouldReloadMirage) {
+            if(shouldReloadMirage && getLevel()!=null) {
                 executeNewMirageLoaderTask();
             }
         }catch (Exception e){
@@ -510,15 +515,20 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
     }
 
     public static void tick(Level world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
-
-        if(blockEntity.isPowered()) {
-            ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
-            mirageWorldsMap.forEach((Integer,mirageWorld)->{
-                mirageWorld.tick();
-            });
-        }
-        if(!world.isClientSide()){// note to self only update state properties in server-side
-            world.setBlock(pos,state.setValue(BlockStateProperties.LIT,blockEntity.isPowered()),Block.UPDATE_ALL);
+        try {
+            if (blockEntity.isPowered()) {
+                ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
+                mirageWorldsMap.forEach((Integer, mirageWorld) -> {
+                    synchronized (mirageWorld) {
+                        mirageWorld.tick();
+                    }
+                });
+            }
+            if (!world.isClientSide()) {// note to self only update state properties in server-side
+                world.setBlock(pos, state.setValue(BlockStateProperties.LIT, blockEntity.isPowered()), Block.UPDATE_ALL);
+            }
+        }catch(Exception e){
+            Mirage.LOGGER.error("Error on MirageBlockEntity.tick...",e);
         }
 
     }

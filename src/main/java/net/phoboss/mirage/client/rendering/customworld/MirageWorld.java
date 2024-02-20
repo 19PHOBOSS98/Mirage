@@ -194,7 +194,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             BlockPos fakeBlockPos = BlockPos.of(key);
             BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
             matrices.translate(relativePos.getX(),relativePos.getY(),relativePos.getZ());
-            renderMirageBlock(block.blockState, fakeBlockPos, this, matrices, vertexConsumers, true,getRandom());
+            renderMirageBlock(block.blockState, fakeBlockPos, this, matrices, vertexConsumers, true,RandomSource.create());
             matrices.popPose();
         });
 
@@ -258,7 +258,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             if (fakeBlockEntity != null) {
                 if(shouldRenderModelData(fakeBlockEntity)) {
                     ModelData modelData = fakeBlockEntity.getModelData();
-                    renderMirageModelData(fakeBlockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom(),modelData);
+                    renderMirageModelData(fakeBlockState, fakeBlockPos, this, matrices, vertexConsumers, true, RandomSource.create(),modelData);
                     matrices.popPose();
                     return;
                 }
@@ -274,7 +274,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                     vertexConsumers.setActualPos(new BlockPos(relativePos.getX()&15,relativePos.getY()&15,relativePos.getZ()&15));
                     this.searchByRelativeOffset(false);
                 }else {
-                    renderMirageBlock(fakeBlockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom());
+                    renderMirageBlock(fakeBlockState, fakeBlockPos, this, matrices, vertexConsumers, true, RandomSource.create());
                 }
             }
             matrices.popPose();
@@ -395,6 +395,9 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public void clearMirageWorld(){
+        synchronized (this.mirageBufferStorage.mirageImmediate){
+            this.mirageBufferStorage.resetMirageImmediateBuffers();
+        }
         synchronized (this.mirageStateNEntities){
             clearMirageStateNEntities();
         }
@@ -467,7 +470,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             BlockEntity blockEntity = stateNEntity.blockEntity;
             Entity entity = stateNEntity.entity;
 
-            addToAnimatedSprites(blockState,getRandom());
+            addToAnimatedSprites(blockState,RandomSource.create());
 
             if(entity != null){
                 addToManualEntityRenderList(blockPosKey,entity);

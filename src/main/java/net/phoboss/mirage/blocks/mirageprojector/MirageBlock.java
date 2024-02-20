@@ -64,6 +64,7 @@ public class MirageBlock extends BaseEntityBlock implements EntityBlock, BookSet
         if(pLevel.isClientSide()) {
             MirageBlockEntity blockEntity = (MirageBlockEntity) pLevel.getBlockEntity(pPos);
             blockEntity.stopMirageLoader();
+            blockEntity.resetMirageWorlds();
         }
         //System.gc();
     }
