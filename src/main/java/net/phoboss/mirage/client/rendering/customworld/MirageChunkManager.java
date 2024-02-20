@@ -104,7 +104,6 @@ public class MirageChunkManager extends ChunkSource {
             return super.getBlockEntity(pPos, pCreationType);
         }
 
-
         @Override
         public void addAndRegisterBlockEntity(BlockEntity blockEntity) {
 

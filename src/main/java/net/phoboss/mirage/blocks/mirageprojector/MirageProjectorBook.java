@@ -3,7 +3,6 @@ package net.phoboss.mirage.blocks.mirageprojector;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import net.minecraft.core.Vec3i;
 import net.phoboss.mirage.client.rendering.customworld.StructureStates;
 import net.phoboss.mirage.utility.Book;
@@ -151,7 +150,7 @@ public class MirageProjectorBook implements Book {
                 ", mirror='" + mirror + '\'' +
                 ", rotate=" + rotate+
                 ", files=" + files +
-                ", frames=" + frames;
+                ", frames=" + frames.toString();
     }
 
 

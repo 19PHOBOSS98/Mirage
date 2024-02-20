@@ -28,6 +28,10 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
     public void render(MirageBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         super.render(blockEntity, partialTick, poseStack, bufferSource, packedLight);
 
+        if(blockEntity.getLevel() instanceof MirageWorld){ //TODO: Make this a configurable option
+            return;//recursive mirages are unsafe
+        }
+
         boolean isPowered = blockEntity.isPowered();
         if(!isPowered) {
             return;
@@ -70,7 +74,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         if (mirageWorld != null) {
             BlockPos projectorPos = blockEntity.getBlockPos();
-            //poseStack.pushPose();
+            //poseStack.pushPose();//TODO: add this as book settings
             //poseStack.mulPose(new Quaternion(new Vector3f(0,0,1),45,true));
             mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
             //poseStack.popPose();
