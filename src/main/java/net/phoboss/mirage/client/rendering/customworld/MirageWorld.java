@@ -56,7 +56,7 @@ import net.minecraft.world.entity.EntityLookup;
 import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.tick.QueryableTickScheduler;
-import net.phoboss.decobeacon.blocks.decobeacon.DecoBeaconBlock;
+import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
