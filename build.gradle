@@ -57,8 +57,8 @@ dependencies {
 	modCompileOnlyApi "maven.modrinth:YL57xq9U:ogIRhnAJ" //https://modrinth.com/mod/iris/version/1.6.11+1.18.2
 	modCompileOnlyApi "maven.modrinth:AANobbMI:74Y5Z8fo" //https://modrinth.com/mod/sodium/version/mc1.18.2-0.4.1
 
-	modCompileOnlyApi "net.phoboss:decobeacon:0.0.1-1.18.2-Fabric"
-	modRuntimeOnly "net.phoboss:decobeacon:0.0.1-1.18.2-Fabric"
+	modCompileOnlyApi "net.phoboss:decobeacons:0.0.1-1.18.2-Fabric"
+	modRuntimeOnly "net.phoboss:decobeacons:0.0.1-1.18.2-Fabric"
 	modRuntimeOnly "curse.maven:architectury-api-419699:4521464"
 
 	modRuntimeOnly "maven.modrinth:nELKzJ5C:RbIlcuU7" //https://modrinth.com/mod/open-simple-frames/version/RbIlcuU7

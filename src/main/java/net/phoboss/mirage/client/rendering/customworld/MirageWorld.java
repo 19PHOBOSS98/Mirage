@@ -366,7 +366,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public static boolean addToManualBlockRenderList(long blockPosKey, StateNEntity stateNEntity, Long2ObjectOpenHashMap<StateNEntity> manualRenderBlocks){
-        if(FabricLoader.getInstance().isModLoaded("decobeacon")) {
+        if(FabricLoader.getInstance().isModLoaded("decobeacons")) {
             if (stateNEntity.blockState.getBlock() instanceof DecoBeaconBlock) {
                 manualRenderBlocks.put(blockPosKey, stateNEntity);
                 return true;
