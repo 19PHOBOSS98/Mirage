@@ -45,10 +45,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         setBookSettingsPOJO(new MirageProjectorBook());
     }
 
-    public MirageBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
-    }
-
     public void setActiveLow(boolean activeLow) {
         getBookSettingsPOJO().setActiveLow(activeLow);
         setChanged();
@@ -143,8 +139,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             }
         }
     }
-
-
 
     public void loadMirage() throws Exception{
         if(this.mirageWorlds == null){
@@ -327,8 +321,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         super.saveAdditional(nbt);
     }
 
-
-
     @Override
     public void load(CompoundTag nbt) {
         super.load(nbt);
@@ -471,7 +463,6 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             nextStep = Math.abs(Math.max(0,Math.min(nextStep,getMirageWorlds().size()-1)));
         }
         setStep(nextStep);
-        setChanged();
     }
 
     public int mirageWorldIndex = 0;
@@ -482,14 +473,13 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
 
     public void setMirageWorldIndex(int newMirageWorldIndex) {
         this.mirageWorldIndex = newMirageWorldIndex;
-        setChanged();
     }
     public long previousTime = System.currentTimeMillis();
 
-    public void nextMirageWorldIndex(int listSize){
+    public int nextMirageWorldIndex(int listSize){
         long currentTime = System.currentTimeMillis();
+        int index = getMirageWorldIndex();
         if (currentTime - this.previousTime >= getBookSettingsPOJO().getDelay()*1000) {
-            int index = getMirageWorldIndex();
             boolean reverse = getBookSettingsPOJO().isReverse();
             if(isRewind()){
                 reverse = !reverse;
@@ -508,22 +498,52 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             }else{
                 index = Math.abs(Math.max(0,Math.min(index,getMirageWorlds().size()-1)));
             }
-
-            setMirageWorldIndex(index);
             this.previousTime = currentTime;
         }
+        return index;
     }
 
     public static void tick(Level world, BlockPos pos, BlockState state, MirageBlockEntity blockEntity) {
         try {
-            if (blockEntity.isPowered()) {
-                ConcurrentHashMap<Integer, MirageWorld> mirageWorldsMap = blockEntity.getMirageWorlds();
-                mirageWorldsMap.forEach((Integer, mirageWorld) -> {
-                    synchronized (mirageWorld) {
-                        mirageWorld.tick();
+            ConcurrentHashMap<Integer, MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
+            //to synchronize with server side
+            //int mirageListLength = mirageWorldList.size();
+            int mirageListLength = blockEntity.getFileNames().size();
+
+            boolean isPowered = blockEntity.isPowered();
+            boolean isTopPowered = blockEntity.isTopPowered();
+            boolean areSidesPowered = blockEntity.areSidesPowered();
+
+            if(isPowered) {
+                MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
+                if (mirageProjectorBook.isAutoPlay()) {
+                    if (!blockEntity.isPause()) {
+                        int nextIndex = blockEntity.nextMirageWorldIndex(mirageListLength);
+                        blockEntity.setMirageWorldIndex(nextIndex);
+
                     }
-                });
+                } else {
+                    if (blockEntity.isStepping()) {
+                        blockEntity.nextBookStep(mirageListLength);
+                    }
+                    int newIndex = Math.abs(mirageProjectorBook.getStep());
+
+                    if (newIndex != blockEntity.getMirageWorldIndex()) {
+                        blockEntity.setMirageWorldIndex(newIndex);
+                    }
+                }
             }
+            blockEntity.savePreviousTopPowerState(isTopPowered);
+            blockEntity.savePreviousBottomPowerState(isPowered);
+            blockEntity.savePreviousSidesPowerState(areSidesPowered);
+            if (world.getGameTime() % 1000L == 0L && isPowered) {
+                blockEntity.setChanged();
+            }
+            mirageWorldList.forEach((Integer, mirageWorld) -> {
+                synchronized (mirageWorld) {
+                    mirageWorld.tick();
+                }
+            });
             if (!world.isClientSide()) {// note to self only update state properties in server-side
                 world.setBlock(pos, state.setValue(BlockStateProperties.LIT, blockEntity.isPowered()), Block.UPDATE_ALL);
             }
