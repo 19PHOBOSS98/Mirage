@@ -2,6 +2,8 @@ package net.phoboss.mirage.blocks.mirageprojector;
 
 import net.minecraft.util.math.Vec3i;
 
+import java.util.Arrays;
+
 public class Frame {
     int[] move = {0,0,0};
     String mirror = "NONE";
@@ -19,4 +21,12 @@ public class Frame {
         return rotate;
     }
 
+    @Override
+    public String toString() {
+        return "Frame{" +
+                "move=" + Arrays.toString(move) +
+                ", mirror='" + mirror + '\'' +
+                ", rotate=" + rotate +
+                '}';
+    }
 }

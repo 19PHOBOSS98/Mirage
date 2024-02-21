@@ -126,10 +126,5 @@ public class MirageChunkManager extends ChunkManager {
         public ChunkLevelType getLevelType() {
             return ChunkLevelType.FULL;
         }
-
-        /*@Override
-        public ChunkHolder.LevelType getLevelType() {
-            return ChunkHolder.LevelType.BORDER;
-        }*/
     }
 }

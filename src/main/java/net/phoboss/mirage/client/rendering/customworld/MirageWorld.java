@@ -206,10 +206,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
             matrices.pop();
         });
 
-        /*
-        Matrix4f matrixView = RenderSystem.getModelViewMatrix();
-        matrixView.mul(matrices.peek().getPositionMatrix());
-         */
         Matrix4f matrixView = new Matrix4f(RenderSystem.getModelViewMatrix());
         matrixView.mul(new Matrix4f(matrices.peek().getPositionMatrix()));
         this.mirageBufferStorage.mirageVertexBuffers.forEach((renderLayer,vertexBuffer)->{
@@ -294,7 +290,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
             clearMirageStateNEntities();
         }
         this.mirageBufferStorage.uploadBufferBuildersToVertexBuffers(vertexConsumers);
-
     }
 
     /*public static boolean shouldRenderModelData(BlockEntity blockEntity){
@@ -391,7 +386,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -400,6 +394,9 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public void clearMirageWorld(){
+        synchronized (this.mirageBufferStorage.mirageImmediate){
+            this.mirageBufferStorage.resetMirageImmediateBuffers();
+        }
         synchronized (this.mirageStateNEntities){
             clearMirageStateNEntities();
         }
@@ -737,7 +734,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
         return world.getGeneratorStoredBiome(biomeX,biomeY,biomeZ);
     }
 
-
     @Override
     public long getTime() {
         return this.world.getTime();
@@ -863,5 +859,4 @@ public class MirageWorld extends World implements ServerWorldAccess {
     public void emitGameEvent(@Nullable Entity entity, GameEvent event, BlockPos pos) {
 
     }
-
 }

@@ -150,7 +150,7 @@ public class MirageProjectorBook implements Book {
                 ", mirror='" + mirror + '\'' +
                 ", rotate=" + rotate+
                 ", files=" + files +
-                ", frames=" + frames;
+                ", frames=" + frames.toString();
     }
 
 
