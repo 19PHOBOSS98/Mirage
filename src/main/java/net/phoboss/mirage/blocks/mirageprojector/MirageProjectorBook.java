@@ -8,6 +8,7 @@ import net.phoboss.mirage.client.rendering.customworld.StructureStates;
 import net.phoboss.mirage.utility.Book;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -125,6 +126,34 @@ public class MirageProjectorBook implements Book {
     }
 
     String[] BOOLEAN_KEYS = {"activeLow","loop","autoPlay","reverse"};
+
+    @Override
+    public String toString() {
+        return "MirageProjectorBook{" +
+                "move=" + Arrays.toString(move) +
+                ", mirror='" + mirror + '\'' +
+                ", rotate=" + rotate +
+                ", activeLow=" + activeLow +
+                ", loop=" + loop +
+                ", autoPlay=" + autoPlay +
+                ", reverse=" + reverse +
+                ", delay=" + delay +
+                ", files=" + files +
+                ", frames=" + frames +
+                ", step=" + step +
+                ", BOOLEAN_KEYS=" + Arrays.toString(BOOLEAN_KEYS) +
+                '}';
+    }
+
+    public String getRelevantSettings(){
+        return "move=" + Arrays.toString(move) +
+                ", mirror='" + mirror + '\'' +
+                ", rotate=" + rotate+
+                ", files=" + files +
+                ", frames=" + frames.toString();
+    }
+
+
     @Override
     public Book validateNewBookSettings(JsonObject newSettings) throws Exception {
         JsonArray moveArray = newSettings.get("move").getAsJsonArray();
