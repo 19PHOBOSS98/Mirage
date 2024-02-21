@@ -48,11 +48,12 @@ public class MirageStructure extends StructureTemplate {
         }
     }
 
-
     @Override
     public boolean place(ServerWorldAccess world, BlockPos pos, BlockPos pivot, StructurePlacementData placementData, net.minecraft.util.math.random.Random random, int flags) {
+        boolean ignoreEntities = placementData.shouldIgnoreEntities();
+        placementData.setIgnoreEntities(true);
         boolean result =  super.place(world, pos, pivot, placementData, random, flags);
-
+        placementData.setIgnoreEntities(ignoreEntities);
         if (!placementData.shouldIgnoreEntities()) {
             spawnEntities((World)world, pos,placementData.getMirror(),placementData.getRotation(),placementData.getPosition(),placementData.getBoundingBox(), placementData.shouldInitializeMobs());
         }

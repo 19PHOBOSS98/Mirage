@@ -42,11 +42,13 @@ public class MirageImmediate implements VertexConsumerProvider {
         return mirageBufferBuilder;
     }
 
-
-
     public Object2ObjectLinkedOpenHashMap<RenderLayer, MirageBufferBuilder> getLayerBuffers(){
         return layerBuffers;
     }
 
-
+    public void reset(){
+        layerBuffers.forEach(((renderType, mirageBufferBuilder) -> {
+            mirageBufferBuilder.clear();
+        }));
+    }
 }

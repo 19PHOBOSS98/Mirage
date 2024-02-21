@@ -5,6 +5,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.TexturedRenderLayers;
+import net.minecraft.util.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,19 +13,7 @@ import java.util.List;
 public class MirageBufferStorage {
     public Object2ObjectLinkedOpenHashMap<RenderLayer, VertexBuffer> mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
 
-    public MirageBufferStorage() {
-        reset();
-    }
-
-    public Object2ObjectLinkedOpenHashMap<RenderLayer, MirageBufferBuilder> getDefaultBuffers(){
-        Object2ObjectLinkedOpenHashMap<RenderLayer, MirageBufferBuilder> map = new Object2ObjectLinkedOpenHashMap<>();
-        getDefaultRenderLayers().forEach((renderLayer)->{
-            map.put(renderLayer,new MirageBufferBuilder(renderLayer.getExpectedBufferSize()));
-        });
-        return map;
-    }
-    public List<RenderLayer> getDefaultRenderLayers(){
-        List<RenderLayer> layers = new ArrayList<>();
+    private static final List<RenderLayer> DEFAULT_RENDER_LAYERS = Util.make(new ArrayList<>(), (layers) -> {
         layers.add(TexturedRenderLayers.getEntitySolid());
         layers.add(TexturedRenderLayers.getEntityCutout());
         layers.add(TexturedRenderLayers.getBannerPatterns());
@@ -52,8 +41,14 @@ public class MirageBufferStorage {
 
         layers.add(RenderLayer.getArmorGlint());
         layers.add(RenderLayer.getArmorEntityGlint());
-        return layers;
-    }
+    });
+    public Object2ObjectLinkedOpenHashMap<RenderLayer, MirageBufferBuilder> mirageBuffers = Util.make(new Object2ObjectLinkedOpenHashMap<>(), (map) -> {
+        for(RenderLayer renderLayer : DEFAULT_RENDER_LAYERS){
+            map.put(renderLayer,new MirageBufferBuilder(renderLayer.getExpectedBufferSize()));
+        }
+    });
+
+    public MirageImmediate mirageImmediate = new MirageImmediate(mirageBuffers);
 
 
     public void uploadBufferBuildersToVertexBuffers(MirageImmediate mirageImmediate) {
@@ -69,11 +64,21 @@ public class MirageBufferStorage {
 
     }
 
-    public void reset() {
-        this.mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
+    public void reset() {//Should only be called from "renderThread"
+        resetMirageImmediateBuffers();
+        resetVertexBuffers();
+    }
+    public void resetMirageImmediateBuffers() {
+        this.mirageImmediate.reset();
+    }
+    public void resetVertexBuffers() {
+        this.mirageVertexBuffers.forEach(((renderType, vertexBuffer) -> {
+            vertexBuffer.close();//Should only be called from "renderThread"
+        }));
     }
 
     public MirageImmediate getMirageImmediate(){
-        return new MirageImmediate(getDefaultBuffers());
+        resetMirageImmediateBuffers();
+        return this.mirageImmediate;
     }
 }

@@ -139,12 +139,22 @@ public class MirageWorld extends World implements ServerWorldAccess {
     protected Long2ObjectOpenHashMap<BlockWEntity> bERBlocksList;
     private MirageBufferStorage mirageBufferStorage;
 
+    public boolean isVertexBufferBlocksListPopulated(){
+        return !this.vertexBufferBlocksList.isEmpty();
+    }
 
 
     public boolean newlyRefreshedBuffers = true;
     public boolean overideRefreshBuffer = true;
 
-    public static void refreshVertexBuffersIfNeeded(BlockPos projectorPos,MirageWorld mirageWorld){
+    public boolean getOverideRefreshBuffer(){
+        return this.overideRefreshBuffer;
+    }
+    public void setOverideRefreshBuffer(boolean overide){
+        this.overideRefreshBuffer = overide;
+    }
+
+    public static void refreshVertexBuffersIfNeeded(BlockPos projectorPos, MirageWorld mirageWorld){
         boolean shadersEnabled = false;
         if(FabricLoader.getInstance().isModLoaded("iris")){
             shadersEnabled = IrisApi.getInstance().getConfig().areShadersEnabled();
@@ -158,7 +168,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
             mirageWorld.newlyRefreshedBuffers = true;
         }
     }
-    public static RenderLayer TRANSLUCENT_RENDER_LAYER = RenderLayer.getTranslucent();
 
     public void render(BlockPos projectorPos,float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay){
         refreshVertexBuffersIfNeeded(projectorPos,this);
@@ -202,8 +211,12 @@ public class MirageWorld extends World implements ServerWorldAccess {
         markAnimatedSprite(this.animatedSprites);
     }
 
-    public void initVertexBuffers(BlockPos projectorPos) {
+    public void resetMirageBufferStorage(){
         this.mirageBufferStorage.reset();
+    }
+
+    public void initVertexBuffers(BlockPos projectorPos) {
+        resetMirageBufferStorage();
         MatrixStack matrices = new MatrixStack();
         MirageImmediate vertexConsumers = this.mirageBufferStorage.getMirageImmediate();
 
@@ -253,6 +266,22 @@ public class MirageWorld extends World implements ServerWorldAccess {
             }
             matrices.pop();
         });
+        /*
+        mirageStateNEntities gets populated from a different thread (MirageLoader).
+        mirageStateNEntities populates vertexBufferBlocksList.
+        vertexBufferBlocksList populates vertexConsumers with vertices.
+
+        if process line has reached this point and vertexBufferBlocksList is not empty that means
+        the MirageLoader thread has finished populating mirageStateNEntities
+        which in turn finished populating vertexBufferBlocksList
+        which in turn finished populating the vertexConsumers with vertices.
+
+        This ensures that it is safe to clear out the mirageStateNEntities.
+        Otherwise we would empty it out too soon and not populate the vertexBufferBlocksList.
+         */
+        if(isVertexBufferBlocksListPopulated() && !hasBlockEntities()){//Mirage BlockEntities also need this to check for neighboring block states
+            clearMirageStateNEntities();
+        }
         this.mirageBufferStorage.uploadBufferBuildersToVertexBuffers(vertexConsumers);
     }
 
@@ -348,9 +377,16 @@ public class MirageWorld extends World implements ServerWorldAccess {
         return false;
     }
 
+    public void clearMirageStateNEntities(){
+        this.mirageStateNEntities.clear();
+    }
+
     public void clearMirageWorld(){
+        synchronized (this.mirageBufferStorage.mirageImmediate){
+            this.mirageBufferStorage.resetMirageImmediateBuffers();
+        }
         synchronized (this.mirageStateNEntities){
-            this.mirageStateNEntities.clear();
+            clearMirageStateNEntities();
         }
         synchronized (this.bERBlocksList){
             this.bERBlocksList.clear();
@@ -363,9 +399,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
         }
         synchronized (this.manualEntityList){
             this.manualEntityList.clear();
-        }
-        synchronized (this.mirageBufferStorage){
-            this.mirageBufferStorage = new MirageBufferStorage();
         }
         synchronized (this.mirageBlockEntityTickers){
             this.mirageBlockEntityTickers.clear();
@@ -408,6 +441,16 @@ public class MirageWorld extends World implements ServerWorldAccess {
         this.manualEntityList.put(blockPosKey,new StateNEntity(entity));
     }
 
+    public boolean hasBlockEntities = false;
+
+    public boolean hasBlockEntities() {
+        return hasBlockEntities;
+    }
+
+    public void setHasBlockEntities(boolean hasBlockEntities) {
+        this.hasBlockEntities = hasBlockEntities;
+    }
+
     public void initBlockRenderLists() {
         this.mirageStateNEntities.forEach((blockPosKey,stateNEntity)->{
             BlockState blockState = stateNEntity.blockState;
@@ -421,6 +464,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
                 return;
             }
             if(blockEntity != null) {
+                setHasBlockEntities(true);
                 if (blockEntityRenderDispatcher.get(blockEntity)!=null) {
                     this.bERBlocksList.put(blockPosKey,new BlockWEntity(blockState,blockEntity));
                 }
@@ -446,7 +490,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
             this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
         });
-        this.mirageStateNEntities.clear();
+
     }
 
     public static void renderMirageBlockEntity(BlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers){
@@ -612,10 +656,6 @@ public class MirageWorld extends World implements ServerWorldAccess {
         }
         throw new IllegalStateException("Cannot use IServerWorld#getWorld in a client environment");
     }
-
-
-
-
 
     public class BlockTicker {
         public BlockPos blockPos;
@@ -797,5 +837,4 @@ public class MirageWorld extends World implements ServerWorldAccess {
     public void emitGameEvent(@Nullable Entity entity, GameEvent event, BlockPos pos) {
 
     }
-
 }
