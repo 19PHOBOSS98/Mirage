@@ -16,6 +16,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.utility.BookSettingsUtility;
@@ -48,6 +49,27 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
     @Override
     public BlockRenderType getRenderType(BlockState state) {
         return BlockRenderType.ENTITYBLOCK_ANIMATED;
+    }
+
+    public void onBlockDestruction(World world, BlockPos pos){
+        if(world.isClient()) {
+            MirageBlockEntity blockEntity = (MirageBlockEntity) world.getBlockEntity(pos);
+            blockEntity.stopMirageLoader();
+            blockEntity.resetMirageWorlds();
+        }
+        //System.gc();
+    }
+
+    @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        super.onBreak(world, pos, state, player);
+        onBlockDestruction(world, pos);
+    }
+
+    @Override
+    public void onDestroyedByExplosion(World world, BlockPos pos, Explosion explosion) {
+        super.onDestroyedByExplosion(world, pos, explosion);
+        onBlockDestruction(world, pos);
     }
 
     @Override
