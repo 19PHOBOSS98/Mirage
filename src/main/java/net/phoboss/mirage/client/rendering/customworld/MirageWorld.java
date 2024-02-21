@@ -222,7 +222,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public void initVertexBuffers(BlockPos projectorPos) {
-
         resetMirageBufferStorage();
         PoseStack matrices = new PoseStack();
         MirageImmediate vertexConsumers = this.mirageBufferStorage.getMirageImmediate();
@@ -387,6 +386,9 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public void clearMirageWorld(){
+        synchronized (this.mirageBufferStorage.mirageImmediate){
+            this.mirageBufferStorage.resetMirageImmediateBuffers();
+        }
         synchronized (this.mirageStateNEntities){
             clearMirageStateNEntities();
         }
@@ -466,10 +468,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                 return;
             }
             if(blockEntity != null) {
-                if(blockEntity instanceof MirageBlockEntity){
-                    return;//recursive mirages are unsafe
-                }
-
                 setHasBlockEntities(true);
                 if (blockEntityRenderDispatcher.getRenderer(blockEntity)!=null) {
                     this.bERBlocksList.put(blockPosKey,new BlockWEntity(blockState,blockEntity));

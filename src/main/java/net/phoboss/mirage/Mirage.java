@@ -7,9 +7,11 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LevelEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -65,11 +67,32 @@ public class Mirage
     }
 
     @Mod.EventBusSubscriber(modid = Mirage.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public class ClientModEvents {
+    public class ClientModRegistryEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event){
             ModRendering.registerAll();
         }
+    }
+
+    @Mod.EventBusSubscriber(modid = Mirage.MOD_ID, value = Dist.CLIENT)
+    public class ClientModEvents {
+        @SubscribeEvent
+        public static void onWorldLoad(WorldEvent.Load event){
+            if(event.getWorld().isClientSide()) {
+                System.gc();
+            }
+        }
+        @SubscribeEvent
+        public static void onWorldUnload(WorldEvent.Unload event){
+            if(event.getWorld().isClientSide()) {
+                for(Thread thread:Thread.getAllStackTraces().keySet()){
+                    if(thread.getName().equals("MirageLoader") && !thread.isInterrupted()){
+                        thread.interrupt();
+                    }
+                }
+            }
+        }
+
     }
 
     public static void initFolder(Path path){
