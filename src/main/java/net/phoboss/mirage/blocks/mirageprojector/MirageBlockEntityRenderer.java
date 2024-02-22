@@ -16,6 +16,7 @@ import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
 
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -43,11 +44,70 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         MirageWorld mirageWorld = mirageWorldList.get(mirageWorldIndex);
 
         if (mirageWorld != null) {
+            long pGameTime = blockEntity.getLevel().getGameTime();
+            float f = (float)pGameTime + partialTick;
+
             BlockPos projectorPos = blockEntity.getBlockPos();
-            //poseStack.pushPose();//TODO: add this as book settings
-            //poseStack.mulPose(new Quaternion(new Vector3f(0,0,1),45,true));
+
+            MirageProjectorBook bookSettings = blockEntity.getBookSettingsPOJO();
+
+            float[] pScale = bookSettings.getPScale();
+            float[] pMove = bookSettings.getPMove();
+            Quaternion pRotate = bookSettings.getPRotateAsQuat();
+            float[] pRotatePivot = bookSettings.getPRotatePivot();
+            float[] pSpinPivot = bookSettings.getPSpinPivot();
+            Vector3f pSpinAxis = bookSettings.getPSpinAxisAsVec3();
+            float pSpinSpeed = bookSettings.getPSpinSpeed();
+
+            HashMap<Integer,Frame> frames = blockEntity.getBookSettingsPOJO().getFrames();
+            Frame mwFrame = frames.get(mirageWorldIndex);
+
+            poseStack.pushPose();
+
+            poseStack.scale(pScale[0],pScale[1],pScale[2]);
+
+            if(mwFrame != null) {
+                float[] pScaleFrame = mwFrame.getPScale();
+                poseStack.scale(pScaleFrame[0],pScaleFrame[1],pScaleFrame[2]);
+            }
+
+            poseStack.pushPose();
+            poseStack.translate(pMove[0],pMove[1],pMove[2]);
+
+            if(mwFrame != null){
+                float[] pMoveFrame = mwFrame.getPMove();
+                poseStack.translate(pMoveFrame[0],pMoveFrame[1],pMoveFrame[2]);
+            }
+
+            poseStack.translate(pSpinPivot[0],pSpinPivot[1],pSpinPivot[2]);
+            poseStack.mulPose(pSpinAxis.rotationDegrees(f * pSpinSpeed));
+            poseStack.translate(-pSpinPivot[0],-pSpinPivot[1],-pSpinPivot[2]);
+
+            if(mwFrame != null) {
+                float[] pSpinPivotFrame = mwFrame.getPSpinPivot();
+                Vector3f pSpinAxisFrame = mwFrame.getPSpinAxisAsVec3();
+                float pSpinSpeedFrame = mwFrame.getPSpinSpeed();
+                poseStack.translate(pSpinPivotFrame[0],pSpinPivotFrame[1],pSpinPivotFrame[2]);
+                poseStack.mulPose(pSpinAxisFrame.rotationDegrees(f * pSpinSpeedFrame));
+                poseStack.translate(-pSpinPivotFrame[0],-pSpinPivotFrame[1],-pSpinPivotFrame[2]);
+            }
+            //TODO: add this as book settings
+            poseStack.translate(pRotatePivot[0],pRotatePivot[1],pRotatePivot[2]);
+            poseStack.mulPose(pRotate);
+            poseStack.translate(-pRotatePivot[0],-pRotatePivot[1],-pRotatePivot[2]);
+
+            if(mwFrame != null) {
+                float[] pRotatePivotFrame = mwFrame.getPRotatePivot();
+                poseStack.translate(pRotatePivotFrame[0],pRotatePivotFrame[1],pRotatePivotFrame[2]);
+                poseStack.mulPose(mwFrame.getPRotateAsQuat());
+                poseStack.translate(-pRotatePivotFrame[0],-pRotatePivotFrame[1],-pRotatePivotFrame[2]);
+            }
+
+
+
             mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
-            //poseStack.popPose();
+            poseStack.popPose();
+            poseStack.popPose();
         }
     }
 
