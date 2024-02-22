@@ -51,16 +51,6 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
             BlockPos projectorPos = blockEntity.getBlockPos();
 
             MirageProjectorBook bookSettings = blockEntity.getBookSettingsPOJO();
-            /*Vector3f pScale = new Vector3f(2,2,2);
-
-            Vector3d pMove = new Vector3d(-1.25,0.5,-1.25);
-
-            Vector3f pRotate = new Vector3f(35.26F,0F,45F);
-            Vector3d pRotatePivot = new Vector3d(1.5,1.5,1.5);
-            Vector3d pSpinPivot = new Vector3d(1.5,1.5,1.5);
-            Vector3f pSpinAxis = new Vector3f(0F,1F,0F);
-            float pSpinSpeed = 10F;
-            pSpinAxis.normalize();*/
 
             float[] pScale = bookSettings.getPScale();
             float[] pMove = bookSettings.getPMove();
