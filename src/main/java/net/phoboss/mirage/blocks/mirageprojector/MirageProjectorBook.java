@@ -424,7 +424,7 @@ public class MirageProjectorBook implements Book {
             }
         }
 
-        if(newSettings.get("pSpinAxis") != null) {
+        if(newSettings.get("pRotate") != null) {
             JsonArray pRotateArray = newSettings.get("pRotate").getAsJsonArray();
             try {
                 pRotateArray.forEach((v) -> {
