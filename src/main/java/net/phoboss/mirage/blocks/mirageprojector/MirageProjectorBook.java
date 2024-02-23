@@ -435,11 +435,20 @@ public class MirageProjectorBook implements Book {
             }
             if (pRotateArray.size() != 3) {
                 if (pRotateArray.size() == 4) {
-                    JsonObject newPRotateAsQuat = new JsonObject();
+                    //USER INPUT: 0:W,1:X,2:Y,3:Z
+                    //1.18- 1.19: QUATERNION = i,j,k,r
+                    //1.20: QUATERNION = x,y,z,w
+                    /*JsonObject newPRotateAsQuat = new JsonObject();
                     newPRotateAsQuat.add("x", pRotateArray.get(1));
                     newPRotateAsQuat.add("y", pRotateArray.get(2));
                     newPRotateAsQuat.add("z", pRotateArray.get(3));
-                    newPRotateAsQuat.add("w", pRotateArray.get(0));
+                    newPRotateAsQuat.add("w", pRotateArray.get(0));*/
+                    JsonObject newPRotateAsQuat = new Gson().toJsonTree(new Quaternionf(
+                                                                                pRotateArray.get(1).getAsFloat(),//i:x
+                                                                                pRotateArray.get(2).getAsFloat(),//j:y
+                                                                                pRotateArray.get(3).getAsFloat(),//k:z
+                                                                                pRotateArray.get(0).getAsFloat()//r:w
+                                                                                        )).getAsJsonObject();
                     newSettings.add("pRotateAsQuat", newPRotateAsQuat);
                     JsonArray emptyArray = new JsonArray();
                     emptyArray.add(0);
