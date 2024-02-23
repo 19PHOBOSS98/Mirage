@@ -55,13 +55,33 @@ public class Frame {
     public float[] getPRotate() {
         return pRotate;
     }
+    public void setPRotate(float[] pRotate) {
+        this.pRotate = pRotate;
+        //setPRotateAsQuat(pRotate);
+    }
+    public Quaternion pRotateAsQuat = Quaternion.ONE;
 
     public Quaternion getPRotateAsQuat() {
+        return pRotateAsQuat;
+    }
+
+    public static Quaternion convertToQuat(float[] pRotate) {
         return new Quaternion(pRotate[0],pRotate[1],pRotate[2],true);
     }
 
-    public void setPRotate(float[] pRotate) {
-        this.pRotate = pRotate;
+    public void setPRotateAsQuat(float[] pRotate) {
+        /*
+        if(pRotate[0]==0 && pRotate[1]==0 && pRotate[2]==0){
+            this.pRotateAsQuat = new Quaternionf();
+            return;
+        }
+        Vector3f pRot = bookSettings.getPRotateAsVec();
+        pRot.mul(0.017453292F);
+        float pRotAngle = pRot.length();
+        return Axis.of(pRot.normalize()).rotationDegrees(pRotAngle);
+        return new Quaternionf(new AxisAngle4f(pRotAngle, pRot.x, pRot.y, pRot.z)//couldn't get these to work :(
+        */
+        this.pRotateAsQuat = convertToQuat(pRotate);
     }
 
     public float[] getPRotatePivot() {
