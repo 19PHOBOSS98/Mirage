@@ -46,7 +46,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         if (mirageWorld != null) {
             long pGameTime = blockEntity.getLevel().getGameTime();
-            float f = (float)pGameTime + partialTick;
+            float time = (float)pGameTime + partialTick;
 
             BlockPos projectorPos = blockEntity.getBlockPos();
 
@@ -81,7 +81,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
             }
 
             poseStack.translate(pSpinPivot[0],pSpinPivot[1],pSpinPivot[2]);
-            poseStack.mulPose(pSpinAxis.rotationDegrees(f * pSpinSpeed));
+            poseStack.mulPose(pSpinAxis.rotationDegrees(time * pSpinSpeed));
             poseStack.translate(-pSpinPivot[0],-pSpinPivot[1],-pSpinPivot[2]);
 
             if(mwFrame != null) {
@@ -89,10 +89,10 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
                 Vector3f pSpinAxisFrame = mwFrame.getPSpinAxisAsVec3();
                 float pSpinSpeedFrame = mwFrame.getPSpinSpeed();
                 poseStack.translate(pSpinPivotFrame[0],pSpinPivotFrame[1],pSpinPivotFrame[2]);
-                poseStack.mulPose(pSpinAxisFrame.rotationDegrees(f * pSpinSpeedFrame));
+                poseStack.mulPose(pSpinAxisFrame.rotationDegrees(time * pSpinSpeedFrame));
                 poseStack.translate(-pSpinPivotFrame[0],-pSpinPivotFrame[1],-pSpinPivotFrame[2]);
             }
-            //TODO: add this as book settings
+
             poseStack.translate(pRotatePivot[0],pRotatePivot[1],pRotatePivot[2]);
             poseStack.mulPose(pRotate);
             poseStack.translate(-pRotatePivot[0],-pRotatePivot[1],-pRotatePivot[2]);
