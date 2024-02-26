@@ -469,12 +469,13 @@ public class MirageProjectorBook implements Book {
 
     public static JsonObject convertToJSONQuaternion(JsonArray pRotateArray){
         Quaternionf quat = convertToQuat(new float[]{pRotateArray.get(0).getAsFloat(),pRotateArray.get(1).getAsFloat(),pRotateArray.get(2).getAsFloat()});
-        JsonObject quatJson = new JsonObject();
+        /*JsonObject quatJson = new JsonObject();
         quatJson.addProperty("w",quat.w);
         quatJson.addProperty("x",quat.x);
         quatJson.addProperty("y",quat.y);
         quatJson.addProperty("z",quat.z);
-        return quatJson;
+        return quatJson;*/
+        return new Gson().toJsonTree(quat).getAsJsonObject();
     }
 
     @Override
