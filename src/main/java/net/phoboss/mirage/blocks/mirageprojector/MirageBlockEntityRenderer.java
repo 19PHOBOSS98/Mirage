@@ -44,7 +44,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         if (mirageWorld != null) {
             BlockPos projectorPos = blockEntity.getPos();
             //poseStack.pushPose();//TODO: add this as book settings
-            //poseStack.mulPose(new Quaternion(new Vector3f(0,0,1),45,true));
+            //poseStack.mulPose(new Quaternionf(new Vector3f(0,0,1),45,true));
             mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
             //poseStack.popPose();
         }

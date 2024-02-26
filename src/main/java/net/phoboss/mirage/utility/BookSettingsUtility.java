@@ -8,6 +8,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.phoboss.mirage.blocks.mirageprojector.Frame;
 
 import java.util.Map;
 
@@ -39,6 +40,38 @@ public interface BookSettingsUtility {
         }
     }
 
+    static JsonObject createNewFrames(JsonElement framesJSON) throws Exception{
+        JsonObject newFramesJSON = new JsonObject();
+        for (Map.Entry<String, JsonElement> frame : framesJSON.getAsJsonObject().entrySet()) {
+            String frameIndex = frame.getKey();
+
+            try{
+                Integer.parseInt(frameIndex);
+            }catch(Exception e){
+                throw new Exception("Frame Index Should Be Integer: " + frameIndex);
+            }
+
+            JsonObject frameJSON = new Gson().toJsonTree(new Frame()).getAsJsonObject();
+
+            for (Map.Entry<String, JsonElement> setting : frame.getValue().getAsJsonObject().entrySet()) {
+
+                String settingName = setting.getKey();
+
+                if (!frameJSON.has(settingName)) {
+                    throw new Exception("Unrecognized Setting: " + settingName + " in Frame: " + frameIndex);
+                }
+
+                JsonElement oldValue = frameJSON.get(settingName);
+                JsonElement newValue = setting.getValue();
+                if(oldValue.getClass() != newValue.getClass()){
+                    throw new Exception("Invalid Entry: " + settingName + ":" + newValue + " in Frame: " + frameIndex);
+                }
+                frameJSON.add(settingName,newValue);
+            }
+            newFramesJSON.add(frameIndex,frameJSON);
+        }
+        return newFramesJSON;
+    }
 
 
     static JsonObject createNewBook(JsonObject settingsJSON, Book book) throws Exception{
@@ -53,6 +86,9 @@ public interface BookSettingsUtility {
             JsonElement newValue = setting.getValue();
             if(oldValue.getClass() != newValue.getClass()){
                 throw new Exception("Invalid Entry: " + settingName + ":" + newValue);
+            }
+            if(settingName.equals("frames")) {
+                newValue = createNewFrames(newValue);
             }
             bookJSON.add(settingName,newValue);
         }
