@@ -58,7 +58,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
             float[] pSpinPivot = bookSettings.getPSpinPivot();
             Vector3f pSpinAxis = bookSettings.getPSpinAxisAsVec3();
             float pSpinSpeed = bookSettings.getPSpinSpeed();
-
+            float pSpinOffset = bookSettings.getPSpinOffset();
             HashMap<Integer,Frame> frames = blockEntity.getBookSettingsPOJO().getFrames();
             Frame mwFrame = frames.get(mirageWorldIndex);
 
@@ -80,15 +80,16 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
             }
 
             poseStack.translate(pSpinPivot[0],pSpinPivot[1],pSpinPivot[2]);
-            poseStack.mulPose(pSpinAxis.rotationDegrees(time * pSpinSpeed));
+            poseStack.mulPose(pSpinAxis.rotationDegrees(time * pSpinSpeed * 0.05F - pSpinOffset));// derived from BeaconBlockEntityRenderer: 45 deg/sec:2.25F (2.25/45=0.05) didn't bother to look into it more :)
             poseStack.translate(-pSpinPivot[0],-pSpinPivot[1],-pSpinPivot[2]);
 
             if(mwFrame != null) {
                 float[] pSpinPivotFrame = mwFrame.getPSpinPivot();
                 Vector3f pSpinAxisFrame = mwFrame.getPSpinAxisAsVec3();
                 float pSpinSpeedFrame = mwFrame.getPSpinSpeed();
+                float pSpinOffsetFrame = mwFrame.getPSpinOffset();
                 poseStack.translate(pSpinPivotFrame[0],pSpinPivotFrame[1],pSpinPivotFrame[2]);
-                poseStack.mulPose(pSpinAxisFrame.rotationDegrees(time * pSpinSpeedFrame));
+                poseStack.mulPose(pSpinAxisFrame.rotationDegrees(time * pSpinSpeedFrame * 0.05F - pSpinOffsetFrame));
                 poseStack.translate(-pSpinPivotFrame[0],-pSpinPivotFrame[1],-pSpinPivotFrame[2]);
             }
 
@@ -102,9 +103,6 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
                 poseStack.mulPose(mwFrame.getPRotateAsQuat());
                 poseStack.translate(-pRotatePivotFrame[0],-pRotatePivotFrame[1],-pRotatePivotFrame[2]);
             }
-
-
-
             mirageWorld.render(projectorPos, partialTick, poseStack, bufferSource, packedLight, 0);
             poseStack.popPose();
             poseStack.popPose();
