@@ -40,6 +40,7 @@ public class MirageProjectorBook implements Book {
     float[] pSpinPivot = {0,0,0};
     float[] pSpinAxis = {0,1,0};
     float pSpinSpeed = 0;
+    float pSpinOffset = 0;
 
     public boolean isReverse() {
         return reverse;
@@ -259,6 +260,12 @@ public class MirageProjectorBook implements Book {
         this.pSpinSpeed = pSpinSpeed;
     }
 
+    public float getPSpinOffset() {
+        return pSpinOffset;
+    }
+    public void setPSpinOffset(float pSpinOffset) {
+        this.pSpinOffset = pSpinOffset;
+    }
     String[] BOOLEAN_KEYS = {"activeLow","loop","autoPlay","reverse"};
 
     @Override
@@ -379,6 +386,46 @@ public class MirageProjectorBook implements Book {
             }
         }
 
+        if(newSettings.get("pRotate") != null) {
+            JsonArray pRotateArray = newSettings.get("pRotate").getAsJsonArray();
+            try {
+                pRotateArray.forEach((v) -> {
+                    v.getAsFloat();
+                });
+            } catch (Exception e) {
+                throw new Exception("Invalid pRotate Value: " + newSettings.get("pRotate"));
+            }
+            if (pRotateArray.size() != 3) {
+                if (pRotateArray.size() == 4) {
+                    //USER INPUT: 0:W,1:X,2:Y,3:Z
+                    //1.18- 1.19: QUATERNION = i,j,k,r
+                    //1.20: QUATERNION = x,y,z,w
+                    /*JsonObject newPRotateAsQuat = new JsonObject();
+                    newPRotateAsQuat.add("x", pRotateArray.get(1));
+                    newPRotateAsQuat.add("y", pRotateArray.get(2));
+                    newPRotateAsQuat.add("z", pRotateArray.get(3));
+                    newPRotateAsQuat.add("w", pRotateArray.get(0));*/
+                    JsonObject newPRotateAsQuat = new Gson().toJsonTree(new Quaternionf(
+                            pRotateArray.get(1).getAsFloat(),//i:x
+                            pRotateArray.get(2).getAsFloat(),//j:y
+                            pRotateArray.get(3).getAsFloat(),//k:z
+                            pRotateArray.get(0).getAsFloat()//r:w
+                    )).getAsJsonObject();
+                    newSettings.add("pRotateAsQuat", newPRotateAsQuat);
+                    JsonArray emptyArray = new JsonArray();
+                    emptyArray.add(0);
+                    emptyArray.add(0);
+                    emptyArray.add(0);
+                    newSettings.add("pRotate", emptyArray);
+                } else {
+                    throw new Exception("Invalid pRotate Value: " + newSettings.get("pRotate"));
+                }
+            } else {
+                JsonObject newPRotateAsQuat = convertToJSONQuaternion(pRotateArray);
+                newSettings.add("pRotateAsQuat", newPRotateAsQuat);
+            }
+        }
+
         if(newSettings.get("pSpinPivot") != null) {
             JsonArray pSpinPivotArray = newSettings.get("pSpinPivot").getAsJsonArray();
             if (pSpinPivotArray.size() != 3) {
@@ -406,17 +453,17 @@ public class MirageProjectorBook implements Book {
                 throw new Exception("Invalid pSpinAxis Value: " + newSettings.get("pSpinAxis"));
             }
             Vector3f spinAxis = new Vector3f(pSpinAxisArray.get(0).getAsFloat(),pSpinAxisArray.get(1).getAsFloat(),pSpinAxisArray.get(2).getAsFloat());
-            if( spinAxis.x == 0
-                    && spinAxis.y == 0
-                    && spinAxis.z == 0){
+            if( spinAxis.x() == 0
+                    && spinAxis.y() == 0
+                    && spinAxis.z() == 0){
                 throw new Exception("Invalid pSpinAxis Value, must have at least one non-zero value: "+ newSettings.get("pSpinAxis"));
             }else{
                 try {
                     spinAxis.normalize();
                     JsonArray norm = new JsonArray();
-                    norm.add(spinAxis.x);
-                    norm.add(spinAxis.y);
-                    norm.add(spinAxis.z);
+                    norm.add(spinAxis.x());
+                    norm.add(spinAxis.y());
+                    norm.add(spinAxis.z());
                     newSettings.add("pSpinAxis",norm);
                 }catch (Exception e){
                     throw new Exception("Could Not Normalize pSpinAxis Value: "+ newSettings.get("pSpinAxis"));
@@ -424,43 +471,18 @@ public class MirageProjectorBook implements Book {
             }
         }
 
-        if(newSettings.get("pRotate") != null) {
-            JsonArray pRotateArray = newSettings.get("pRotate").getAsJsonArray();
+        if(newSettings.get("pSpinSpeed") != null) {
             try {
-                pRotateArray.forEach((v) -> {
-                    v.getAsFloat();
-                });
+                newSettings.get("pSpinSpeed").getAsFloat();
             } catch (Exception e) {
-                throw new Exception("Invalid pRotate Value: " + newSettings.get("pRotate"));
+                throw new Exception("Invalid pSpinSpeed Value: " + newSettings.get("pSpinSpeed"));
             }
-            if (pRotateArray.size() != 3) {
-                if (pRotateArray.size() == 4) {
-                    //USER INPUT: 0:W,1:X,2:Y,3:Z
-                    //1.18- 1.19: QUATERNION = i,j,k,r
-                    //1.20: QUATERNION = x,y,z,w
-                    /*JsonObject newPRotateAsQuat = new JsonObject();
-                    newPRotateAsQuat.add("x", pRotateArray.get(1));
-                    newPRotateAsQuat.add("y", pRotateArray.get(2));
-                    newPRotateAsQuat.add("z", pRotateArray.get(3));
-                    newPRotateAsQuat.add("w", pRotateArray.get(0));*/
-                    JsonObject newPRotateAsQuat = new Gson().toJsonTree(new Quaternionf(
-                                                                                pRotateArray.get(1).getAsFloat(),//i:x
-                                                                                pRotateArray.get(2).getAsFloat(),//j:y
-                                                                                pRotateArray.get(3).getAsFloat(),//k:z
-                                                                                pRotateArray.get(0).getAsFloat()//r:w
-                                                                                        )).getAsJsonObject();
-                    newSettings.add("pRotateAsQuat", newPRotateAsQuat);
-                    JsonArray emptyArray = new JsonArray();
-                    emptyArray.add(0);
-                    emptyArray.add(0);
-                    emptyArray.add(0);
-                    newSettings.add("pRotate", emptyArray);
-                } else {
-                    throw new Exception("Invalid pRotate Value: " + newSettings.get("pRotate"));
-                }
-            } else {
-                JsonObject newPRotateAsQuat = convertToJSONQuaternion(pRotateArray);
-                newSettings.add("pRotateAsQuat", newPRotateAsQuat);
+        }
+        if(newSettings.get("pSpinOffset") != null) {
+            try {
+                newSettings.get("pSpinOffset").getAsFloat();
+            } catch (Exception e) {
+                throw new Exception("Invalid pSpinOffset Value: " + newSettings.get("pSpinOffset"));
             }
         }
 
