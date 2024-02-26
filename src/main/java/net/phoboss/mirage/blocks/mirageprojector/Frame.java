@@ -22,6 +22,7 @@ public class Frame {
     float[] pSpinAxis = {0,1,0};
     float pSpinSpeed = 0;
 
+    float pSpinOffset = 0;
 
     public Vec3i getMoveVec3i() {
         return new Vec3i(move[0],move[1],move[2]);
@@ -117,6 +118,12 @@ public class Frame {
         this.pSpinSpeed = pSpinSpeed;
     }
 
+    public float getPSpinOffset() {
+        return pSpinOffset;
+    }
+    public void setPSpinOffset(float pSpinOffset) {
+        this.pSpinOffset = pSpinOffset;
+    }
     public String toString() {
         return "Frame{" +
                 "move=" + Arrays.toString(move) +

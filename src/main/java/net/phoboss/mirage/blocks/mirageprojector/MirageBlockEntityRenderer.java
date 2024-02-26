@@ -12,8 +12,6 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
-
-
 import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
 
 import java.util.HashMap;
@@ -46,10 +44,11 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
 
         if (mirageWorld != null) {
             long pGameTime = blockEntity.getWorld().getTime();
-            float time = (float)pGameTime + tickDelta;
-            
+            float time = pGameTime + tickDelta;
+            //float time = (float)pGameTime + tickDelta;
+
             BlockPos projectorPos = blockEntity.getPos();
-            
+
             MirageProjectorBook bookSettings = blockEntity.getBookSettingsPOJO();
 
             float[] pScale = bookSettings.getPScale();
@@ -59,7 +58,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
             float[] pSpinPivot = bookSettings.getPSpinPivot();
             Vec3f pSpinAxis = bookSettings.getPSpinAxisAsVec3();
             float pSpinSpeed = bookSettings.getPSpinSpeed();
-
+            float pSpinOffset = bookSettings.getPSpinOffset();
             HashMap<Integer,Frame> frames = blockEntity.getBookSettingsPOJO().getFrames();
             Frame mwFrame = frames.get(mirageWorldIndex);
 
@@ -81,15 +80,16 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
             }
 
             poseStack.translate(pSpinPivot[0],pSpinPivot[1],pSpinPivot[2]);
-            poseStack.multiply(pSpinAxis.getDegreesQuaternion(time * pSpinSpeed));
+            poseStack.multiply(pSpinAxis.getDegreesQuaternion(time * pSpinSpeed * 0.05F - pSpinOffset)); // derived from BeaconBlockEntityRenderer: 45 deg/sec:2.25F (2.25/45=0.05) didn't bother to look into it more :)
             poseStack.translate(-pSpinPivot[0],-pSpinPivot[1],-pSpinPivot[2]);
 
             if(mwFrame != null) {
                 float[] pSpinPivotFrame = mwFrame.getPSpinPivot();
                 Vec3f pSpinAxisFrame = mwFrame.getPSpinAxisAsVec3();
                 float pSpinSpeedFrame = mwFrame.getPSpinSpeed();
+                float pSpinOffsetFrame = mwFrame.getPSpinOffset();
                 poseStack.translate(pSpinPivotFrame[0],pSpinPivotFrame[1],pSpinPivotFrame[2]);
-                poseStack.multiply(pSpinAxisFrame.getDegreesQuaternion(time * pSpinSpeedFrame));
+                poseStack.multiply(pSpinAxisFrame.getDegreesQuaternion(time * pSpinSpeedFrame * 0.05F - pSpinOffsetFrame));
                 poseStack.translate(-pSpinPivotFrame[0],-pSpinPivotFrame[1],-pSpinPivotFrame[2]);
             }
 
