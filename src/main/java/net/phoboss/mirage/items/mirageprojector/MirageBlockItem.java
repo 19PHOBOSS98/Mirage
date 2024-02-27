@@ -43,25 +43,15 @@ public class MirageBlockItem extends BlockItem implements GeoItem {
             tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.2"));
             tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.3"));
             tooltip.add(Text.translatable("block.mirage.item.tooltip.shift.4"));
-        } else if(Screen.hasControlDown()){
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.0"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.1"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.2"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.3"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.4"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.5"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.6"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.7"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.8"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.9"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.10"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.11"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.12"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.13"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.14"));
-            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl.15"));
+        } else if(Screen.hasAltDown() && Screen.hasControlDown()){
+        for(int i=0;i<15;++i) {
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.shift_alt." + i));
         }
-        else {
+    } else if(Screen.hasControlDown()){
+        for(int i=0;i<14;++i) {
+            tooltip.add(Text.translatable("block.mirage.item.tooltip.ctrl."+i));
+        }
+    }else {
             tooltip.add(Text.translatable("block.mirage.item.tooltip.0"));
             tooltip.add(Text.translatable("block.mirage.item.tooltip.1"));
             tooltip.add(Text.translatable("block.mirage.item.tooltip.2"));
@@ -70,7 +60,7 @@ public class MirageBlockItem extends BlockItem implements GeoItem {
             tooltip.add(Text.translatable("block.mirage.item.tooltip.5"));
         }
     }
-    
+
     @Override
     public void createRenderer(Consumer<Object> consumer) {
         consumer.accept(new RenderProvider() {
