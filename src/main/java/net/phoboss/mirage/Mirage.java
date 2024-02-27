@@ -118,7 +118,7 @@ public class Mirage
         }
         JsonObject mirageConfig = new JsonObject();
         mirageConfig.addProperty("schematicsDirectoryName", "schematics");
-
+        mirageConfig.addProperty("enableRecursiveMirage", false);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (JsonWriter writer = new JsonWriter(new FileWriter(CONFIG_FILE.toFile()))) {
             gson.toJson(mirageConfig, mirageConfig.getClass(), writer);
