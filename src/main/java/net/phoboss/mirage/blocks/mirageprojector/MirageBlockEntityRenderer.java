@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
+import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -34,8 +35,8 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         if(!blockEntity.isPowered()) {
             return;
         }
-        if(blockEntity.getWorld() instanceof MirageWorld){ //TODO: Make this a configurable option
-            return;//recursive mirages are unsafe
+        if(!Mirage.CONFIGS.get("enableRecursiveMirage").getAsBoolean() && blockEntity.getWorld() instanceof MirageWorld){
+                return;//recursive mirages are unsafe
         }
         ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
         int mirageWorldIndex = blockEntity.getMirageWorldIndex();

@@ -30,6 +30,7 @@ public class Mirage implements ModInitializer {
 	public static Path SCHEMATICS_FOLDER;
 	public static Path CONFIG_FILE;
 
+	public static JsonObject CONFIGS;
 	@Override
 	public void onInitialize() {
 		GeckoLib.initialize();
@@ -55,22 +56,28 @@ public class Mirage implements ModInitializer {
 		initFolder(configPath);
 		CONFIG_FILE = configPath.resolve("mirage_config.json");
 		if(CONFIG_FILE.toFile().exists()){
+			try{
+				CONFIGS = JsonParser.parseReader(new FileReader(CONFIG_FILE.toFile())).getAsJsonObject();
+			} catch (IOException e) {
+				LOGGER.error(e.getMessage(),e);
+			}
 			return;
 		}
 		JsonObject mirageConfig = new JsonObject();
 		mirageConfig.addProperty("schematicsDirectoryName", "schematics");
-
+		mirageConfig.addProperty("enableRecursiveMirage", false);
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		try (JsonWriter writer = new JsonWriter(new FileWriter(CONFIG_FILE.toFile()))) {
 			gson.toJson(mirageConfig, mirageConfig.getClass(), writer);
+			CONFIGS = mirageConfig;
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(),e);
 		}
+
 	}
 	public static void initSchematicsFolder(){
 		try{
-			JsonObject configs = JsonParser.parseReader(new FileReader(CONFIG_FILE.toFile())).getAsJsonObject();
-			String directoryName = configs.get("schematicsDirectoryName").getAsString();
+			String directoryName = CONFIGS.get("schematicsDirectoryName").getAsString();
 			SCHEMATICS_FOLDER = FabricLoader.getInstance().getGameDir().resolve(directoryName);
 			initFolder(SCHEMATICS_FOLDER);
 		}catch(Exception e){
