@@ -47,25 +47,15 @@ public class MirageBlockItem extends BlockItem implements IAnimatable {
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.shift.2"));
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.shift.3"));
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.shift.4"));
+        } else if(Screen.hasAltDown() && Screen.hasControlDown()){
+            for(int i=0;i<15;++i) {
+                tooltip.add(new TranslatableText("block.mirage.item.tooltip.shift_alt." + i));
+            }
         } else if(Screen.hasControlDown()){
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.0"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.1"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.2"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.3"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.4"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.5"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.6"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.7"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.8"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.9"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.10"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.11"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.12"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.13"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.14"));
-            tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl.15"));
-        }
-        else {
+            for(int i=0;i<14;++i) {
+                tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl."+i));
+            }
+        } else {
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.0"));
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.1"));
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.2"));
