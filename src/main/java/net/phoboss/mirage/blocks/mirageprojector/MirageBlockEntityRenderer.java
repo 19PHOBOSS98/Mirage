@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
+import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.renderers.geo.GeoBlockRenderer;
@@ -33,7 +34,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         if(!blockEntity.isPowered()) {
             return;
         }
-        if(blockEntity.getLevel() instanceof MirageWorld){ //TODO: Make this a configurable option
+        if(!Mirage.CONFIGS.get("enableRecursiveMirage").getAsBoolean() && blockEntity.getLevel() instanceof MirageWorld){
             return;//recursive mirages are unsafe
         }
         ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
