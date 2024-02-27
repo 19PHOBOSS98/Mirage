@@ -49,7 +49,7 @@ public class MirageBlockItem extends BlockItem implements IAnimatable {
             tooltip.add(new TranslatableText("block.mirage.item.tooltip.shift.4"));
         } else if(Screen.hasAltDown() && Screen.hasControlDown()){
             for(int i=0;i<15;++i) {
-                tooltip.add(new TranslatableText("block.mirage.item.tooltip.shift_alt." + i));
+                tooltip.add(new TranslatableText("block.mirage.item.tooltip.ctrl_alt." + i));
             }
         } else if(Screen.hasControlDown()){
             for(int i=0;i<14;++i) {
