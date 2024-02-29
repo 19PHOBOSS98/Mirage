@@ -106,9 +106,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
     private Future mirageLoaderFuture;
 
     public void stopMirageLoader(){
-        if(this.mirageLoaderFuture!=null && !this.mirageLoaderFuture.isDone()){
+        if(this.mirageLoaderFuture!=null){
+            this.mirageLoaderFuture.cancel(true);
             try{
-                this.mirageLoaderFuture.cancel(true);
                 this.mirageLoaderFuture.get(5, TimeUnit.SECONDS);
             }catch (Exception e){
                 Mirage.LOGGER.error("Error on mirageLoader.interrupt()",e);
@@ -141,7 +141,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
             HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
             for(int i=0;i<fileCount;++i){
-                if(Thread.currentThread().isInterrupted()){
+                if(Thread.currentThread().isInterrupted() || getWorld().getBlockEntity(getPos())==null){
                     throw new InterruptedException();
                 }
                 Thread.currentThread().sleep(1000);
@@ -339,7 +339,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
 
     @Override
     public void markDirty() {
-        if(!(getWorld() instanceof MirageWorld)) {
+        if(!(getWorld() instanceof MirageWorld)) {//"Accessing OpenGL functions from outside the main render thread is not supported when using Sodium"
             getWorld().updateListeners(getPos(), getCachedState(), getCachedState(), Block.NOTIFY_ALL);
         }
         super.markDirty();
@@ -480,7 +480,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
                 index = reverse ? index + listSize : index;
                 index = (index) % listSize;
             }else{
-                index = Math.abs(Math.max(0,Math.min(index,getMirageWorlds().size()-1)));
+                index = Math.abs(Math.max(0,Math.min(index,listSize-1)));
             }
             this.previousTime = currentTime;
         }
@@ -499,7 +499,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
             boolean isTopPowered = blockEntity.isTopPowered();
             boolean areSidesPowered = blockEntity.areSidesPowered();
 
-            if(isPowered) {
+            if(!isPowered) {
+                blockEntity.setMirageWorldIndex(0);
+            }else{
                 MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
                 if (mirageProjectorBook.isAutoPlay()) {
                     if (!blockEntity.isPause()) {
@@ -521,7 +523,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
             blockEntity.savePreviousTopPowerState(isTopPowered);
             blockEntity.savePreviousBottomPowerState(isPowered);
             blockEntity.savePreviousSidesPowerState(areSidesPowered);
-            if (world.getTime() % 500L == 0L && isPowered) {
+            if (world.getTime() % 500L >= 0L && isPowered) {
                 blockEntity.markDirty();
             }
             mirageWorldList.forEach((Integer, mirageWorld) -> {
