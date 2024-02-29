@@ -487,7 +487,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                 index = reverse ? index + listSize : index;
                 index = (index) % listSize;
             }else{
-                index = Math.abs(Math.max(0,Math.min(index,getMirageWorlds().size()-1)));
+                index = Math.abs(Math.max(0,Math.min(index,listSize-1)));
             }
             this.previousTime = currentTime;
         }
