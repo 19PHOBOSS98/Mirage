@@ -6,14 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.telemetry.events.WorldLoadEvent;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -27,6 +21,7 @@ import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.client.rendering.ModRendering;
 import net.phoboss.mirage.items.ModItemGroups;
 import net.phoboss.mirage.items.ModItems;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
 import java.io.FileReader;
@@ -34,6 +29,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Mirage.MOD_ID)
@@ -45,6 +42,9 @@ public class Mirage
     public static Path CONFIG_FILE;
 
     public static JsonObject CONFIGS;
+
+    public static ExecutorService THREAD_POOL;
+
     public Mirage()
     {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -86,16 +86,16 @@ public class Mirage
         public static void onWorldLoad(LevelEvent.Load event){
             if(event.getLevel().isClientSide()) {
                 System.gc();
+                THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                        .namingPattern("MirageLoader-%d")
+                        .priority(Thread.MAX_PRIORITY)
+                        .build());
             }
         }
         @SubscribeEvent
         public static void onWorldUnload(LevelEvent.Unload event){
             if(event.getLevel().isClientSide()) {
-                for(Thread thread:Thread.getAllStackTraces().keySet()){
-                    if(thread.getName().equals("MirageLoader") && !thread.isInterrupted()){
-                        thread.interrupt();
-                    }
-                }
+                THREAD_POOL.shutdownNow();
             }
         }
 
