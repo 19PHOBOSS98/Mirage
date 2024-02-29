@@ -536,7 +536,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             blockEntity.savePreviousTopPowerState(isTopPowered);
             blockEntity.savePreviousBottomPowerState(isPowered);
             blockEntity.savePreviousSidesPowerState(areSidesPowered);
-            if (world.getGameTime() % 1000L == 0L && isPowered) {
+            if (world.getGameTime() % 500L >= 0L && isPowered) {
                 blockEntity.setChanged();
             }
             mirageWorldList.forEach((Integer, mirageWorld) -> {
