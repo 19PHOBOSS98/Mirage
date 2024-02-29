@@ -110,9 +110,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
     private Future mirageLoaderFuture;
 
     public void stopMirageLoader(){
-        if(this.mirageLoaderFuture!=null && !this.mirageLoaderFuture.isDone()){
+        if(this.mirageLoaderFuture!=null){
+            this.mirageLoaderFuture.cancel(true);
             try{
-                this.mirageLoaderFuture.cancel(true);
                 this.mirageLoaderFuture.get(5, TimeUnit.SECONDS);
             }catch (Exception e){
                 Mirage.LOGGER.error("Error on mirageLoader.interrupt()",e);
@@ -145,7 +145,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
             for(int i=0;i<fileCount;++i){
-                if(Thread.currentThread().isInterrupted()){
+                if(Thread.currentThread().isInterrupted() || getLevel().getBlockEntity(getBlockPos())==null){
                     throw new InterruptedException();
                 }
                 Thread.currentThread().sleep(1000);
@@ -505,7 +505,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             boolean isTopPowered = blockEntity.isTopPowered();
             boolean areSidesPowered = blockEntity.areSidesPowered();
 
-            if(isPowered) {
+            if(!isPowered) {
+                blockEntity.setMirageWorldIndex(0);
+            }else{
                 MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
                 if (mirageProjectorBook.isAutoPlay()) {
                     if (!blockEntity.isPause()) {
