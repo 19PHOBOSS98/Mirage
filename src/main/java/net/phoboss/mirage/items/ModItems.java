@@ -15,7 +15,7 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS,Mirage.MOD_ID);
 
     public static final RegistryObject<Item> MIRAGE_BLOCK_ITEM = ITEMS.register("mirage_block",
-            () -> new MirageBlockItem(ModBlocks.MIRAGE_BLOCK.get(),new Item.Properties()));
+            () -> new MirageBlockItem(ModBlocks.MIRAGE_BLOCK.get(),new Item.Properties().stacksTo(1)));
 
     public static void registerAll(IEventBus eventBus){
         Mirage.LOGGER.debug("Registering Mod Items for "+ Mirage.MOD_ID);
