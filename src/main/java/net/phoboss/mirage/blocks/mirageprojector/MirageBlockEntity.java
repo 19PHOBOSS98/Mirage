@@ -536,7 +536,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
             blockEntity.savePreviousTopPowerState(isTopPowered);
             blockEntity.savePreviousBottomPowerState(isPowered);
             blockEntity.savePreviousSidesPowerState(areSidesPowered);
-            if (world.getTime() % 1000L == 0L && isPowered) {
+            if (world.getTime() % 500L == 0L && isPowered) {
                 blockEntity.markDirty();
             }
             mirageWorldList.forEach((Integer, mirageWorld) -> {
