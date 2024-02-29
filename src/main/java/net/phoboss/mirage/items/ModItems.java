@@ -24,7 +24,7 @@ public class ModItems {
                     ModBlocks.MIRAGE_BLOCK.get(),
                     new Item.Properties().tab(ModItemGroups.MIRAGE)));*/
     public static final RegistryObject<Item> MIRAGE_BLOCK_ITEM = ITEMS.register("mirage_block",
-            () -> new MirageBlockItem(ModBlocks.MIRAGE_BLOCK.get(),new Item.Properties().tab(ModItemGroups.MIRAGE)));
+            () -> new MirageBlockItem(ModBlocks.MIRAGE_BLOCK.get(),new Item.Properties().tab(ModItemGroups.MIRAGE).stacksTo(1)));
 
     public static void registerAll(IEventBus eventBus){
         Mirage.LOGGER.debug("Registering Mod Items for "+ Mirage.MOD_ID);
