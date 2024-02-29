@@ -23,6 +23,7 @@ import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.client.rendering.ModRendering;
 import net.phoboss.mirage.items.ModItems;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import software.bernie.geckolib3.GeckoLib;
 
@@ -31,6 +32,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Mirage.MOD_ID)
@@ -42,6 +45,9 @@ public class Mirage
     public static Path CONFIG_FILE;
 
     public static JsonObject CONFIGS;
+
+    public static ExecutorService THREAD_POOL;
+
     public Mirage()
     {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -82,16 +88,16 @@ public class Mirage
         public static void onWorldLoad(WorldEvent.Load event){
             if(event.getWorld().isClientSide()) {
                 System.gc();
+                THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                        .namingPattern("MirageLoader-%d")
+                        .priority(Thread.MAX_PRIORITY)
+                        .build());
             }
         }
         @SubscribeEvent
         public static void onWorldUnload(WorldEvent.Unload event){
             if(event.getWorld().isClientSide()) {
-                for(Thread thread:Thread.getAllStackTraces().keySet()){
-                    if(thread.getName().equals("MirageLoader") && !thread.isInterrupted()){
-                        thread.interrupt();
-                    }
-                }
+                THREAD_POOL.shutdownNow();
             }
         }
 
