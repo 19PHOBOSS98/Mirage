@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
@@ -95,48 +97,31 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     public void resetMirageWorlds(int count){
         resetMirageWorlds();
         freeMirageWorldMemory(count);
-        /*if(mirageWorlds != null) {
-            for (int i = 0; i < count; ++i) {
-                mirageWorlds.put(i,new MirageWorld(world));
-                Thread.currentThread().sleep(1000);
-            }
-        }*/
     }
 
     //I would try to use more threads to load in multiple mirage-frames all at once but each thread would require a lot of memory... too much for the computer to provide all at once
-    private MirageLoader mirageLoader = new MirageLoader();
+    private Future mirageLoaderFuture;
 
     public void stopMirageLoader(){
-        if(this.mirageLoader.isAlive()){
-            this.mirageLoader.interrupt();
+        if(this.mirageLoaderFuture!=null && !this.mirageLoaderFuture.isDone()){
+            try{
+                this.mirageLoaderFuture.cancel(true);
+                this.mirageLoaderFuture.get(5, TimeUnit.SECONDS);
+            }catch (Exception e){
+                Mirage.LOGGER.error("Error on mirageLoader.interrupt()",e);
+            }
         }
-        try{
-            this.mirageLoader.join(5000);
-        }catch (Exception e){
-            Mirage.LOGGER.error("Error on mirageLoader.interrupt()",e);
-        }
-
     }
 
     public void executeNewMirageLoaderTask(){
         stopMirageLoader();
-        this.mirageLoader = new MirageLoader();
-        this.mirageLoader.start();
-    }
-
-    public class MirageLoader extends Thread{
-        public MirageLoader() {
-            setName("MirageLoader");
-        }
-
-        @Override
-        public void run() {
+        this.mirageLoaderFuture = Mirage.THREAD_POOL.submit(() -> {
             try{
                 loadMirage();
             }catch (Exception e){
                 Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
             }
-        }
+        });
     }
 
     public void loadMirage() throws Exception{
@@ -328,7 +313,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
             boolean shouldReloadMirage = newBookShouldReloadMirage(newBook);
             setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
-            if(shouldReloadMirage && getWorld()!=null) {
+            if(shouldReloadMirage && getWorld()!=null && getWorld().isClient()) {
                 executeNewMirageLoaderTask();
             }
         }catch (Exception e){

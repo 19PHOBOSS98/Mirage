@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
 
 public class Mirage implements ModInitializer {
 
@@ -31,6 +32,9 @@ public class Mirage implements ModInitializer {
 	public static Path CONFIG_FILE;
 
 	public static JsonObject CONFIGS;
+
+	public static ExecutorService THREAD_POOL;
+
 	@Override
 	public void onInitialize() {
 		GeckoLib.initialize();
