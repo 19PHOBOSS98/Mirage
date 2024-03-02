@@ -203,6 +203,7 @@ dependencies {
     //COMMENTOUT when running in server//
     runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
+    //runtimeOnly fg.deobf("curse.maven:rubidium-574856:4494903")
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")

@@ -326,10 +326,12 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
     //WIP FramedBlocks compat
 
-    //WIP Embeddium compat
+    //WIP Embeddium/Rubidium compat
+
+    public static final boolean SHOULD_MARK_ANIMATED_SPRITES = ModList.get().isLoaded("embeddium")||ModList.get().isLoaded("rubidium");
 
     public static void markAnimatedSprite(ObjectArrayList<TextureAtlasSprite> animatedSprites){
-        if(!ModList.get().isLoaded("embeddium")){
+        if(!SHOULD_MARK_ANIMATED_SPRITES){
             return;
         }
         animatedSprites.forEach((sprite)->{
