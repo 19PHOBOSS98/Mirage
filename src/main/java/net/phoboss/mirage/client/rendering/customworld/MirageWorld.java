@@ -317,9 +317,9 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }*/
 
     //WIP Sodium compat
-
+    public static final boolean SHOULD_MARK_ANIMATED_SPRITES = FabricLoader.getInstance().isModLoaded("sodium");
     public static void markAnimatedSprite(ObjectArrayList<Sprite> animatedSprites){
-        if(!FabricLoader.getInstance().isModLoaded("sodium")){
+        if(!SHOULD_MARK_ANIMATED_SPRITES){
             return;
         }
         animatedSprites.forEach((sprite)->{
