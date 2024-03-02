@@ -203,6 +203,7 @@ dependencies {
     //COMMENTOUT when running in server//
     runtimeOnly fg.deobf("curse.maven:oculus-581495:5080444")//enable Video Settings>Advanced Tab>Translucent Face Sorting
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5077202")
+    //runtimeOnly fg.deobf("curse.maven:rubidium-574856:4767529")//crashes game for some reason
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:4816846")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:5004068")
