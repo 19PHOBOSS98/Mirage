@@ -72,7 +72,7 @@ public class MirageStructure extends Structure {
             if(area != null && !area.contains(blockPosOff)){
                 return;
             }
-
+            Vec3d blockPosOffVec3 = transformAround(structureEntityInfo.pos, blockMirror, blockRotation, pivot).add(new Vec3d(pos.getX(),pos.getY(),pos.getZ()));
             NbtCompound nbtCompound = structureEntityInfo.nbt.copy();
             Vec3d entityPosRotated = new Vec3d(blockPosOff.getX(),blockPosOff.getY(),blockPosOff.getZ());
 
@@ -83,45 +83,11 @@ public class MirageStructure extends Structure {
             nbtCompound.put("Pos", nbtList);
             nbtCompound.remove("UUID");
 
-            //needs improvement
-            /*Entity entity = EntityType.loadEntityWithPassengers(nbtCompound, world, (entityx) -> {
-                entityx.refreshPositionAndAngles(entityPosRotated.x, entityPosRotated.y, entityPosRotated.z, entityx.getYaw(), entityx.getPitch());
-                return entityx;
-            });
-            if(entity == null){
-                return;
-            }
-            float f = entity.applyMirror(blockMirror);
-            f += entity.getYaw() - entity.applyRotation(blockRotation);
-
-            BlockPos entityPos = blockPosOff;
-            if(entity instanceof AbstractDecorationEntity painting){
-                if(painting.getWidthPixels()>16){
-                    if(blockMirror != BlockMirror.NONE){
-                        BlockPos lookVector = new BlockPos(Direction.fromRotation(f).getVector());
-                        BlockPos lookRight = lookVector.rotate(BlockRotation.CLOCKWISE_90);
-                        entityPos = entityPos.add(lookRight);
-                    }
-                }
-            }
-
-            entity.refreshPositionAndAngles(entityPos, f, entity.getPitch());
-
-            entity.setYaw(f);
-            entity.prevYaw = f;
-            entity.setPitch(entity.getPitch());
-            entity.prevPitch = entity.getPitch();
-
-            entity.resetPosition();
-            if (world instanceof MirageWorld mw) {
-                mw.spawnMirageEntityAndPassengers(entity);
-            }*/
-            //needs improvement
-
             EntityType.getEntityFromNbt(nbtCompound,world).ifPresent((entity) -> {
                 float rotatedYaw = 0;
 
                 BlockPos entityPos = blockPosOff;
+                Vec3d entityPosVec3 = blockPosOffVec3;
                 if(entity instanceof AbstractDecorationEntity painting){
                     rotatedYaw = entity.applyMirror(blockMirror);
                     rotatedYaw += entity.getYaw() - entity.applyRotation(blockRotation);
@@ -133,12 +99,13 @@ public class MirageStructure extends Structure {
                             entityPos = entityPos.add(lookRight);
                         }
                     }
-
+                    entity.refreshPositionAndAngles(entityPos, rotatedYaw, entity.getPitch());
                 }else{
                     rotatedYaw = entity.applyRotation(blockRotation);
                     rotatedYaw += entity.applyMirror(blockMirror) - entity.getYaw();
+                    entity.refreshPositionAndAngles(entityPosVec3.getX(),entityPosVec3.getY(),entityPosVec3.getZ(), rotatedYaw, entity.getPitch());
                 }
-                entity.refreshPositionAndAngles(entityPos, rotatedYaw, entity.getPitch());
+
                 entity.setYaw(rotatedYaw);
                 entity.prevYaw = rotatedYaw;
                 entity.setPitch(entity.getPitch());
