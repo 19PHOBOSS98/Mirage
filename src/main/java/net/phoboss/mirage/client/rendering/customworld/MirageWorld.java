@@ -27,6 +27,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -43,6 +44,7 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -55,6 +57,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.WritableLevelData;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
@@ -67,9 +70,11 @@ import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import org.jetbrains.annotations.Nullable;
 import xfacthd.framedblocks.api.block.FramedBlockEntity;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class MirageWorld extends Level implements ServerLevelAccessor {
     public MirageWorld(Level level) {
@@ -90,8 +95,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         this.bERBlocksList = new Long2ObjectOpenHashMap<>();
         this.vertexBufferBlocksList = new Long2ObjectOpenHashMap<>();
         this.manualBlocksList = new Long2ObjectOpenHashMap<>();
-        this.manualEntityList = new Long2ObjectOpenHashMap<>();
-
+        this.manualEntityRenderList = new Long2ObjectOpenHashMap<>();
+        this.entities = new ArrayList<>();
         setChunkManager(new MirageChunkManager(this));
 
         this.mirageBufferStorage = new MirageBufferStorage();
@@ -143,9 +148,10 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     public ObjectArrayList<TextureAtlasSprite> animatedSprites;
     protected Long2ObjectOpenHashMap<StateNEntity> mirageStateNEntities;
     protected Long2ObjectOpenHashMap<StateNEntity> manualBlocksList;
-    protected Long2ObjectOpenHashMap<StateNEntity> manualEntityList;
+    protected Long2ObjectOpenHashMap<StateNEntity> manualEntityRenderList;
     protected Long2ObjectOpenHashMap<StateNEntity> vertexBufferBlocksList;
     protected Long2ObjectOpenHashMap<BlockWEntity> bERBlocksList;
+    protected List<Entity> entities;
     private MirageBufferStorage mirageBufferStorage;
 
     public boolean isVertexBufferBlocksListPopulated(){
@@ -181,7 +187,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     public void render(BlockPos projectorPos, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay){
         refreshVertexBuffersIfNeeded(projectorPos,this);
 
-        for(Map.Entry<Long, StateNEntity> entry : this.manualEntityList.entrySet()){
+        for(Map.Entry<Long, StateNEntity> entry : this.manualEntityRenderList.entrySet()){
             Entity fakeEntity = entry.getValue().entity;
             matrices.pushPose();
             Vec3 entityPos = fakeEntity.position().subtract(new Vec3(projectorPos.getX(), projectorPos.getY(), projectorPos.getZ()));
@@ -189,8 +195,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             try{
                 renderMirageEntity(fakeEntity, 0, matrices, vertexConsumers);
             }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageEntity(...), removing entry from this.manualEntityList",e);
-                this.manualEntityList.remove(entry.getKey());
+                Mirage.LOGGER.error("Error in renderMirageEntity(...), removing entry from this.manualEntityRenderList",e);
+                this.manualEntityRenderList.remove(entry.getKey());
             }
             matrices.popPose();
         }
@@ -426,8 +432,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         synchronized (this.manualBlocksList){
             this.manualBlocksList.clear();
         }
-        synchronized (this.manualEntityList){
-            this.manualEntityList.clear();
+        synchronized (this.manualEntityRenderList){
+            this.manualEntityRenderList.clear();
         }
         synchronized (this.mirageBlockEntityTickers){
             this.mirageBlockEntityTickers.clear();
@@ -438,7 +444,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         if(entity == null){
             return;
         }
-
+        entities.add(entity);
         if(entity instanceof HangingEntity){
             this.vertexBufferBlocksList.put(blockPosKey, new StateNEntity(entity));
             return;
@@ -460,14 +466,14 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             }
 
             if(hasItem||clothed){
-                this.manualEntityList.put(blockPosKey,new StateNEntity(entity));
+                this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
                 return;
             }
             this.vertexBufferBlocksList.put(blockPosKey, new StateNEntity(entity));
             return;
         }
 
-        this.manualEntityList.put(blockPosKey,new StateNEntity(entity));
+        this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
     }
 
     public boolean hasBlockEntities = false;
@@ -490,7 +496,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
             if(entity != null){
                 addToManualEntityRenderList(blockPosKey,entity);
-                return;
             }
             if(blockEntity != null) {
                 setHasBlockEntities(true);
@@ -675,6 +680,20 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         }
         return Blocks.AIR.defaultBlockState().getFluidState();
     }
+    @Override
+    public List<Entity> getEntities(@Nullable Entity pEntity, AABB pArea) {
+        return this.getEntities(pEntity, pArea, EntitySelector.NO_SPECTATORS);
+    }
+
+    @Override
+    public List<Entity> getEntities(@Nullable Entity pEntity, AABB pBoundingBox, Predicate<? super Entity> pPredicate) {
+        return this.entities;
+    }
+
+    @Override
+    protected LevelEntityGetter<Entity> getEntities() {
+        return null;
+    }
 
     @Override
     public void playSeededSound(@Nullable Player p_220363_, double p_220364_, double p_220365_, double p_220366_, SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {
@@ -714,6 +733,11 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         if(blockEntity instanceof BeaconBlockEntity){//Don't want to have players having a portable beacon buff :)
             return;
         }
+
+        if(blockEntity instanceof GameMasterBlock){//prevent command blocks, structure blocks, jigsaw blocks from ticking
+            return;
+        }
+
         BlockState blockstate = blockEntity.getBlockState();
         BlockEntityTicker blockEntityTicker = blockstate.getTicker(this, blockEntity.getType());
         if (blockEntityTicker != null) {
@@ -860,11 +884,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
     @Override
     public RecipeManager getRecipeManager() {
-        return null;
-    }
-
-    @Override
-    protected LevelEntityGetter<Entity> getEntities() {
         return null;
     }
 
