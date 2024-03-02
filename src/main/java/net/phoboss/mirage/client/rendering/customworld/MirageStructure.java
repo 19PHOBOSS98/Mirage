@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
@@ -73,6 +74,65 @@ public class MirageStructure extends StructureTemplate {
             if(area != null && !area.isInside(blockPosOff)){
                 return;
             }
+            Vec3 blockPosOffVec3 = transform(structureEntityInfo.pos, blockMirror, blockRotation, pivot).add(new Vec3(pos.getX(),pos.getY(),pos.getZ()));
+            CompoundTag nbtCompound = structureEntityInfo.nbt.copy();
+
+            ListTag nbtList = new ListTag();
+            nbtList.add(DoubleTag.valueOf(blockPosOff.getX()));
+            nbtList.add(DoubleTag.valueOf(blockPosOff.getY()));
+            nbtList.add(DoubleTag.valueOf(blockPosOff.getZ()));
+            nbtCompound.put("Pos", nbtList);
+            nbtCompound.remove("UUID");
+
+            EntityType.create(nbtCompound,world).ifPresent((entity) -> {
+                float rotatedYaw = 0;
+
+                BlockPos entityPos = blockPosOff;
+                Vec3 entityPosVec3 = blockPosOffVec3;
+                if(entity instanceof HangingEntity painting){
+                    rotatedYaw = entity.mirror(blockMirror);
+                    rotatedYaw += entity.getYRot() - entity.rotate(blockRotation);
+
+                    if(painting.getWidth()>16){
+                        if(blockMirror != Mirror.NONE){
+                            BlockPos lookVector = new BlockPos(Direction.fromYRot(rotatedYaw).getNormal());
+                            BlockPos lookRight = lookVector.rotate(Rotation.CLOCKWISE_90);
+                            entityPos = entityPos.offset(lookRight);
+                        }
+                    }
+                    entity.moveTo(entityPos, rotatedYaw, entity.getXRot());
+                }else{
+                    rotatedYaw = entity.rotate(blockRotation);
+                    rotatedYaw += entity.mirror(blockMirror) - entity.getYRot();
+                    entity.moveTo(entityPosVec3.x(),entityPosVec3.y(),entityPosVec3.z(), rotatedYaw, entity.getXRot());
+                }
+
+                entity.setYRot(rotatedYaw);
+                entity.yRotO = rotatedYaw;
+                entity.setXRot(entity.getXRot());
+                entity.xRotO = entity.getXRot();
+                entity.setYHeadRot(rotatedYaw);
+                entity.setYBodyRot(rotatedYaw);
+                if(entity instanceof Mob mobEntity){
+                    mobEntity.yHeadRotO =  mobEntity.yHeadRot;
+                    mobEntity.yBodyRotO =  mobEntity.yBodyRot;
+                }
+
+                entity.setOldPosAndRot();
+
+
+                if (world instanceof MirageWorld mw) {
+                    mw.spawnMirageEntityAndPassengers(entity);
+                }
+            });
+
+
+        });
+        /*this.mirageEntities.forEach((structureEntityInfo)->{
+            BlockPos blockPosOff = transform(structureEntityInfo.blockPos, blockMirror, blockRotation, pivot).offset(pos);
+            if(area != null && !area.isInside(blockPosOff)){
+                return;
+            }
 
             CompoundTag nbtCompound = structureEntityInfo.nbt.copy();
             Vec3 entityPosRotated = new Vec3(blockPosOff.getX(),blockPosOff.getY(),blockPosOff.getZ());
@@ -85,7 +145,7 @@ public class MirageStructure extends StructureTemplate {
             nbtCompound.remove("UUID");
 
             //needs improvement
-            /*Entity entity = EntityType.loadEntityWithPassengers(nbtCompound, world, (entityx) -> {
+            *//*Entity entity = EntityType.loadEntityWithPassengers(nbtCompound, world, (entityx) -> {
                 entityx.refreshPositionAndAngles(entityPosRotated.x, entityPosRotated.y, entityPosRotated.z, entityx.getYaw(), entityx.getPitch());
                 return entityx;
             });
@@ -116,7 +176,7 @@ public class MirageStructure extends StructureTemplate {
             entity.resetPosition();
             if (world instanceof MirageWorld mw) {
                 mw.spawnMirageEntityAndPassengers(entity);
-            }*/
+            }*//*
             //needs improvement
 
             EntityType.create(nbtCompound,world).ifPresent((entity) -> {
@@ -134,12 +194,13 @@ public class MirageStructure extends StructureTemplate {
                             entityPos = entityPos.offset(lookRight);
                         }
                     }
-
+                    entity.moveTo(entityPos, rotatedYaw, entity.getXRot());
                 }else{
                     rotatedYaw = entity.rotate(blockRotation);
                     rotatedYaw += entity.mirror(blockMirror) - entity.getYRot();
+                    entity.moveTo(entityPos, rotatedYaw, entity.getXRot());
                 }
-                entity.moveTo(entityPos, rotatedYaw, entity.getXRot());
+
                 entity.setYRot(rotatedYaw);
                 entity.yRotO = rotatedYaw;
                 entity.setXRot(entity.getXRot());
@@ -160,7 +221,7 @@ public class MirageStructure extends StructureTemplate {
             });
 
 
-        });
+        });*/
 
     }
 }

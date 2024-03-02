@@ -194,7 +194,9 @@ dependencies {
     runtimeOnly fg.deobf("rbasamoyai:createbigcannons:forge-1.18.2-0.5.1.a-nightly-03ce570")
     runtimeOnly fg.deobf("com.github.talrey:createdeco:1.2.12-1.18.2")
 
-
+    runtimeOnly fg.deobf("curse.maven:botania-225643:3936568")
+    runtimeOnly fg.deobf("curse.maven:curios-309927:4590652")
+    runtimeOnly fg.deobf("curse.maven:patchouli-306770:3846086")
 
     runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
 
