@@ -60,7 +60,6 @@ import net.minecraft.world.event.GameEvent;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import net.phoboss.mirage.Mirage;
-import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -326,9 +325,9 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }*/
 
     //WIP Sodium compat
-
+    public static final boolean SHOULD_MARK_ANIMATED_SPRITES = FabricLoader.getInstance().isModLoaded("sodium");
     public static void markAnimatedSprite(ObjectArrayList<Sprite> animatedSprites){
-        if(!FabricLoader.getInstance().isModLoaded("sodium")){
+        if(!SHOULD_MARK_ANIMATED_SPRITES){
             return;
         }
         animatedSprites.forEach((sprite)->{
