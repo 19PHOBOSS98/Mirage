@@ -333,7 +333,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     //WIP FramedBlocks compat
 
     //WIP Embeddium/Rubidium compat
-
     public static final boolean SHOULD_MARK_ANIMATED_SPRITES = ModList.get().isLoaded("embeddium")||ModList.get().isLoaded("rubidium");
 
     public static void markAnimatedSprite(ObjectArrayList<TextureAtlasSprite> animatedSprites){
@@ -478,8 +477,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
     }
 
-
-    
     public boolean hasBlockEntities = false;
 
     public boolean hasBlockEntities() {
@@ -500,6 +497,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
             if(entity != null){
                 addToManualEntityRenderList(blockPosKey,entity);
+                stateNEntity = new StateNEntity(blockState,blockEntity);
             }
             if(blockEntity != null) {
                 setHasBlockEntities(true);
@@ -686,7 +684,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         }
         return Blocks.AIR.defaultBlockState().getFluidState();
     }
-
     @Override
     public List<Entity> getEntities(@Nullable Entity pEntity, AABB pArea) {
         return this.getEntities(pEntity, pArea, EntitySelector.NO_SPECTATORS);
@@ -842,8 +839,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         return level.getFluidTicks();
     }
 
-    
-
     @Override
     public int getHeight() {
         return 512;
@@ -891,8 +886,6 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     public RecipeManager getRecipeManager() {
         return null;
     }
-
-    
 
     @Override
     public void levelEvent(@Nullable Player pPlayer, int pType, BlockPos pPos, int pData) {
