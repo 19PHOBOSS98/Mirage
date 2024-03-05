@@ -63,6 +63,6 @@ Give it more then you can start animating structures in real time :) ...
 modId="geckolib"
 mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
-versionRange="[1.18.2,)"
+versionRange="[1.18:3.0.57,)"
 ordering="NONE"
 side="BOTH"
