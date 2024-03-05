@@ -478,6 +478,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
 
             if(entity != null){
                 addToManualEntityRenderList(blockPosKey,entity);
+                stateNEntity = new StateNEntity(blockState,blockEntity);
             }
             if(blockEntity != null) {
                 setHasBlockEntities(true);
