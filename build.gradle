@@ -200,6 +200,7 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:curios-309927:5066842")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:4031402")
 
+    runtimeOnly fg.deobf("curse.maven:immersive-engineering-231951:4780537")
 
     //runtimeOnly "maven.modrinth:c7m1mi73:eLvhoAZV"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 

@@ -63,10 +63,13 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.ModList;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xfacthd.framedblocks.api.block.FramedBlockEntity;
 
@@ -469,8 +472,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                 this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
                 return;
             }
-            this.vertexBufferBlocksList.put(blockPosKey, new StateNEntity(entity));
-            return;
+            //this.vertexBufferBlocksList.put(blockPosKey, new StateNEntity(entity));
+            //return;
         }
 
         this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
@@ -496,6 +499,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
             if(entity != null){
                 addToManualEntityRenderList(blockPosKey,entity);
+                stateNEntity = new StateNEntity(blockState,blockEntity);
             }
             if(blockEntity != null) {
                 setHasBlockEntities(true);
@@ -848,6 +852,11 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     @Override
     public int getHeight() {
         return 512;
+    }
+
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        return this.level.getCapability(cap, side);
     }
 
     @Override
