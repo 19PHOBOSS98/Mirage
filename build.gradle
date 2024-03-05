@@ -202,7 +202,8 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:curios-309927:5086821")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:4966125")
 
-    runtimeOnly "maven.modrinth:c7m1mi73:skM2Il9Z"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
+    runtimeOnly fg.deobf("curse.maven:immersive-engineering-231951:4782978")
+    //runtimeOnly "maven.modrinth:c7m1mi73:skM2Il9Z"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 
     //COMMENTOUT when running in server//
     runtimeOnly fg.deobf("curse.maven:oculus-581495:5080444")//enable Video Settings>Advanced Tab>Translucent Face Sorting
