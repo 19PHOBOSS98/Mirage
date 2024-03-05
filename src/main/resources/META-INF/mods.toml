@@ -60,7 +60,7 @@ Give it more then you can start animating structures in real time :) ...
     side="BOTH"
 
 [[dependencies.mirage]]
-modId="geckolib"
+modId="geckolib3"
 mandatory=true
 # This version range declares a minimum of the current minecraft version up to but not including the next major version
 versionRange="[1.18:3.0.57,)"
