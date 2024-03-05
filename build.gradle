@@ -194,9 +194,19 @@ dependencies {
     runtimeOnly fg.deobf("rbasamoyai:createbigcannons:forge-1.18.2-0.5.1.a-nightly-03ce570")
     runtimeOnly fg.deobf("com.github.talrey:createdeco:1.2.12-1.18.2")
 
+    runtimeOnly fg.deobf("dev:architectury:4.11.93-forge")
+    runtimeOnly fg.deobf("org.valkyrienskies:eureka:1.1.0-beta.8")
+    runtimeOnly fg.deobf("kotlin:kotlinforforge:3.12.0-all")
+    runtimeOnly fg.deobf("org.valkyrienskies:valkyrienskies:118-2.1.0-beta.14")
+
+    runtimeOnly fg.deobf("dan200.computercraft:cc-tweaked:1.18.2-1.101.3")
+    runtimeOnly fg.deobf("net.techtastic:vc:1.5.2+2090972a50")
+
     runtimeOnly fg.deobf("curse.maven:botania-225643:3936568")
     runtimeOnly fg.deobf("curse.maven:curios-309927:4590652")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:3846086")
+
+    runtimeOnly fg.deobf("curse.maven:immersive-engineering-231951:4412849")
 
     runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
 

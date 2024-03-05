@@ -66,10 +66,13 @@ import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.LevelTickAccess;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.ModList;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xfacthd.framedblocks.api.block.FramedBlockEntity;
 
@@ -844,6 +847,12 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     @Override
     public int getHeight() {
         return 512;
+    }
+
+    @NotNull
+    @Override
+    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        return this.level.getCapability(cap, side);
     }
 
     @Override
