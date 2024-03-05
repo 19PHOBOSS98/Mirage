@@ -868,7 +868,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        return super.getCapability(cap, side);
+        return this.level.getCapability(cap, side);
     }
 
     @Override
