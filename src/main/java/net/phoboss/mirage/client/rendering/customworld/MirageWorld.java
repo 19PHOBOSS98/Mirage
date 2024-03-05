@@ -472,8 +472,8 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                 this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
                 return;
             }
-            //this.vertexBufferBlocksList.put(blockPosKey, new StateNEntity(entity));
-            //return;
+            this.vertexBufferBlocksList.put(blockPosKey, new StateNEntity(entity));
+            return;
         }
 
         this.manualEntityRenderList.put(blockPosKey,new StateNEntity(entity));
