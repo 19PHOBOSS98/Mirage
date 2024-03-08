@@ -190,67 +190,71 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public void render(BlockPos projectorPos, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay){
-        refreshVertexBuffersIfNeeded(projectorPos,this);
+        try {
+            refreshVertexBuffersIfNeeded(projectorPos, this);
 
-        for(Map.Entry<Long, StateNEntity> entry : this.manualEntityRenderList.entrySet()){
-            Entity fakeEntity = entry.getValue().entity;
-            matrices.pushPose();
-            Vec3 entityPos = fakeEntity.position().subtract(new Vec3(projectorPos.getX(), projectorPos.getY(), projectorPos.getZ()));
-            matrices.translate(entityPos.x(), entityPos.y(), entityPos.z());
-            try{
-                renderMirageEntity(fakeEntity, 0, matrices, vertexConsumers);
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageEntity(...), removing entry from this.manualEntityRenderList",e);
-                this.manualEntityRenderList.remove(entry.getKey());
+            for (Map.Entry<Long, StateNEntity> entry : this.manualEntityRenderList.entrySet()) {
+                Entity fakeEntity = entry.getValue().entity;
+                matrices.pushPose();
+                Vec3 entityPos = fakeEntity.position().subtract(new Vec3(projectorPos.getX(), projectorPos.getY(), projectorPos.getZ()));
+                matrices.translate(entityPos.x(), entityPos.y(), entityPos.z());
+                try {
+                    renderMirageEntity(fakeEntity, 0, matrices, vertexConsumers);
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in renderMirageEntity(...), removing entry from this.manualEntityRenderList", e);
+                    this.manualEntityRenderList.remove(entry.getKey());
+                }
+                matrices.popPose();
             }
-            matrices.popPose();
-        }
 
-        for(Map.Entry<Long, StateNEntity> entry : this.manualBlocksList.entrySet()){//need to render multi-model-layered translucent blocks (i.e. slime, honey, DecoBeacons etc) manually :(
-            matrices.pushPose();
-            BlockPos fakeBlockPos = BlockPos.of(entry.getKey());
-            BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
-            matrices.translate(relativePos.getX(),relativePos.getY(),relativePos.getZ());
-            try{
-                renderMirageBlock(entry.getValue().blockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom());
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageBlock(...), removing entry from this.manualBlocksList",e);
-                this.manualBlocksList.remove(entry.getKey());
+            for (Map.Entry<Long, StateNEntity> entry : this.manualBlocksList.entrySet()) {//need to render multi-model-layered translucent blocks (i.e. slime, honey, DecoBeacons etc) manually :(
+                matrices.pushPose();
+                BlockPos fakeBlockPos = BlockPos.of(entry.getKey());
+                BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
+                matrices.translate(relativePos.getX(), relativePos.getY(), relativePos.getZ());
+                try {
+                    renderMirageBlock(entry.getValue().blockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom());
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in renderMirageBlock(...), removing entry from this.manualBlocksList", e);
+                    this.manualBlocksList.remove(entry.getKey());
+                }
+                matrices.popPose();
             }
-            matrices.popPose();
-        }
 
-        for (Map.Entry<Long,BlockWEntity> entry : this.bERBlocksList.entrySet()){//animated blocks (enchanting table...)
-            matrices.pushPose();
-            BlockPos fakeBlockPos = BlockPos.of(entry.getKey());
-            BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
-            matrices.translate(relativePos.getX(),relativePos.getY(),relativePos.getZ());
-            try {
-                renderMirageBlockEntity(entry.getValue().blockEntity, tickDelta, matrices, vertexConsumers);
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageBlockEntity(...), removing entry from this.bERBlocksList",e);
-                this.bERBlocksList.remove(entry.getKey());
+            for (Map.Entry<Long, BlockWEntity> entry : this.bERBlocksList.entrySet()) {//animated blocks (enchanting table...)
+                matrices.pushPose();
+                BlockPos fakeBlockPos = BlockPos.of(entry.getKey());
+                BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
+                matrices.translate(relativePos.getX(), relativePos.getY(), relativePos.getZ());
+                try {
+                    renderMirageBlockEntity(entry.getValue().blockEntity, tickDelta, matrices, vertexConsumers);
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in renderMirageBlockEntity(...), removing entry from this.bERBlocksList", e);
+                    this.bERBlocksList.remove(entry.getKey());
+                }
+                matrices.popPose();
             }
-            matrices.popPose();
-        }
 
-        Matrix4f matrixView = new Matrix4f(RenderSystem.getModelViewMatrix());
-        matrixView.mul(new Matrix4f(matrices.last().pose()));
-        for(Map.Entry<RenderType, VertexBuffer> entry : this.mirageBufferStorage.mirageVertexBuffers.entrySet()){
-            RenderType renderLayer = entry.getKey();
-            VertexBuffer vertexBuffer = entry.getValue();
-            renderLayer.setupRenderState();
-            vertexBuffer.bind();
-            try{
-                vertexBuffer.drawWithShader(matrixView, RenderSystem.getProjectionMatrix(),RenderSystem.getShader());
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in vertexBuffer.drawWithShader(...), removing entry from this.mirageBufferStorage.mirageVertexBuffers",e);
-                this.mirageBufferStorage.mirageVertexBuffers.remove(entry.getKey());
+            Matrix4f matrixView = new Matrix4f(RenderSystem.getModelViewMatrix());
+            matrixView.mul(new Matrix4f(matrices.last().pose()));
+            for (Map.Entry<RenderType, VertexBuffer> entry : this.mirageBufferStorage.mirageVertexBuffers.entrySet()) {
+                RenderType renderLayer = entry.getKey();
+                VertexBuffer vertexBuffer = entry.getValue();
+                renderLayer.setupRenderState();
+                vertexBuffer.bind();
+                try {
+                    vertexBuffer.drawWithShader(matrixView, RenderSystem.getProjectionMatrix(), RenderSystem.getShader());
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in vertexBuffer.drawWithShader(...), removing entry from this.mirageBufferStorage.mirageVertexBuffers", e);
+                    this.mirageBufferStorage.mirageVertexBuffers.remove(entry.getKey());
+                }
+                renderLayer.clearRenderState();
             }
-            renderLayer.clearRenderState();
-        }
 
-        markAnimatedSprite(this.animatedSprites);
+            markAnimatedSprite(this.animatedSprites);
+        }catch(Exception e){
+            Mirage.LOGGER.error("Error in MirageWorld.render(...)", e);
+        }
     }
 
     public void resetMirageBufferStorage(){
