@@ -165,6 +165,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public void render(BlockPos projectorPos,float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay){
+        try {
         refreshVertexBuffersIfNeeded(projectorPos,this);
 
         for(Map.Entry<Long, StateNEntity> entry : this.manualEntityRenderList.entrySet()){
@@ -226,6 +227,9 @@ public class MirageWorld extends World implements ServerWorldAccess {
         }
 
         markAnimatedSprite(this.animatedSprites);
+        }catch(Exception e){
+            Mirage.LOGGER.error("Error in MirageWorld.render(...)", e);
+        }
     }
 
     public void resetMirageBufferStorage(){
