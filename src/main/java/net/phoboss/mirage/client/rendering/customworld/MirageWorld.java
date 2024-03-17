@@ -513,9 +513,8 @@ public class MirageWorld extends World implements ServerWorldAccess {
                     this.manualBlocksList.put(blockPosKey, new StateNEntity(blockState));
                     return;
                 }
+                this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
             }
-
-            this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
         });
 
     }
