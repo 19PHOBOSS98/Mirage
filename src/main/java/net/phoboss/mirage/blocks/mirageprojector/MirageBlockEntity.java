@@ -428,7 +428,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
         getBookSettingsPOJO().setStep(step);
         markDirty();
     }
-    public void nextBookStep(int listSize){
+    public int nextBookStep(int listSize){
         int nextStep = getBookSettingsPOJO().getStep();
         boolean reverse = getBookSettingsPOJO().isReverse();
         if(isRewind()){
@@ -444,9 +444,10 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
             nextStep = reverse ? nextStep + listSize : nextStep;
             nextStep = (nextStep) % listSize;
         }else{
-            nextStep = Math.abs(Math.max(0,Math.min(nextStep,getMirageWorlds().size()-1)));
+            nextStep = Math.abs(Math.max(0,Math.min(nextStep,listSize-1)));
         }
         setStep(nextStep);
+        return nextStep;
     }
 
     public int mirageWorldIndex = 0;
@@ -498,19 +499,20 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable {
             boolean isPowered = blockEntity.isPowered();
             boolean isTopPowered = blockEntity.isTopPowered();
             boolean areSidesPowered = blockEntity.areSidesPowered();
-
+            MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
             if(!isPowered) {
                 blockEntity.setMirageWorldIndex(0);
+                mirageProjectorBook.setStep(0);
+                blockEntity.previousTime = System.currentTimeMillis();
             }else{
-                MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
+
                 if (mirageProjectorBook.isAutoPlay()) {
                     if (!blockEntity.isPause()) {
                         int nextIndex = blockEntity.nextMirageWorldIndex(mirageListLength);
                         blockEntity.setMirageWorldIndex(nextIndex);
                     }
                 } else if (blockEntity.isStepping()) {
-                    int newIndex = mirageProjectorBook.getStep();
-                    blockEntity.nextBookStep(mirageListLength);
+                    int newIndex = blockEntity.nextBookStep(mirageListLength);
                     if (newIndex != blockEntity.getMirageWorldIndex()) {
                         blockEntity.setMirageWorldIndex(newIndex);
                     }
