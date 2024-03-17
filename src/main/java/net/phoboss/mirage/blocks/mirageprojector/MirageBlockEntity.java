@@ -433,7 +433,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         getBookSettingsPOJO().setStep(step);
         setChanged();
     }
-    public void nextBookStep(int listSize){
+    public int nextBookStep(int listSize){
         int nextStep = getBookSettingsPOJO().getStep();
         boolean reverse = getBookSettingsPOJO().isReverse();
         if(isRewind()){
@@ -454,6 +454,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             nextStep = Math.abs(Math.max(0,Math.min(nextStep,getMirageWorlds().size()-1)));
         }
         setStep(nextStep);
+        return nextStep;
     }
 
     public int mirageWorldIndex = 0;
@@ -513,14 +514,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                     if (!blockEntity.isPause()) {
                         int nextIndex = blockEntity.nextMirageWorldIndex(mirageListLength);
                         blockEntity.setMirageWorldIndex(nextIndex);
-
                     }
-                } else {
-                    if (blockEntity.isStepping()) {
-                        blockEntity.nextBookStep(mirageListLength);
-                    }
-                    int newIndex = Math.abs(mirageProjectorBook.getStep());
-
+                } else if (blockEntity.isStepping()) {
+                    int newIndex = blockEntity.nextBookStep(mirageListLength);
                     if (newIndex != blockEntity.getMirageWorldIndex()) {
                         blockEntity.setMirageWorldIndex(newIndex);
                     }
@@ -529,7 +525,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             blockEntity.savePreviousTopPowerState(isTopPowered);
             blockEntity.savePreviousBottomPowerState(isPowered);
             blockEntity.savePreviousSidesPowerState(areSidesPowered);
-            if (world.getGameTime() % 500L >= 0L && isPowered) {
+            if (world.getGameTime() % 1200L == 0L && isPowered) {
                 blockEntity.setChanged();
             }
             mirageWorldList.forEach((Integer, mirageWorld) -> {
