@@ -503,6 +503,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                 addToManualEntityRenderList(blockPosKey,entity);
                 stateNEntity = new StateNEntity(blockState,blockEntity);
             }
+
             if(blockEntity != null) {
                 setHasBlockEntities(true);
                 if (blockEntityRenderDispatcher.getRenderer(blockEntity)!=null) {
@@ -526,9 +527,9 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
                     this.manualBlocksList.put(blockPosKey, new StateNEntity(blockState));
                     return;
                 }
-            }
 
-            this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
+                this.vertexBufferBlocksList.put(blockPosKey,stateNEntity);
+            }
         });
 
     }
