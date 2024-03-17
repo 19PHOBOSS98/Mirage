@@ -429,15 +429,13 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         getBookSettingsPOJO().setStep(step);
         setChanged();
     }
-    public int nextBookStep(int listSize){
+    public void nextBookStep(int listSize){
         int nextStep = getBookSettingsPOJO().getStep();
         boolean reverse = getBookSettingsPOJO().isReverse();
         if(isRewind()){
             reverse = !reverse;
         }
         nextStep = reverse ? nextStep - 1 : nextStep + 1;
-
-
         if(getBookSettingsPOJO().isLoop()) {
             /*if (getBookSettingsPOJO().isReverse()) {
                 nextStep = (nextStep + listSize) % listSize;
@@ -450,7 +448,6 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             nextStep = Math.abs(Math.max(0,Math.min(nextStep,getMirageWorlds().size()-1)));
         }
         setStep(nextStep);
-        return nextStep;
     }
 
     public int mirageWorldIndex = 0;
@@ -512,7 +509,8 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                         blockEntity.setMirageWorldIndex(nextIndex);
                     }
                 } else if (blockEntity.isStepping()) {
-                    int newIndex = blockEntity.nextBookStep(mirageListLength);
+                    int newIndex = mirageProjectorBook.getStep();
+                    blockEntity.nextBookStep(mirageListLength);
                     if (newIndex != blockEntity.getMirageWorldIndex()) {
                         blockEntity.setMirageWorldIndex(newIndex);
                     }
