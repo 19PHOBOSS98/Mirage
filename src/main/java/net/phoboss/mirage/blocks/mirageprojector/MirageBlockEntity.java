@@ -376,6 +376,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         return active;
     }
 
+
     public boolean areSidesPowered() {
         boolean active = false;
         try {
@@ -439,8 +440,6 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             reverse = !reverse;
         }
         nextStep = reverse ? nextStep - 1 : nextStep + 1;
-
-
         if(getBookSettingsPOJO().isLoop()) {
             /*if (getBookSettingsPOJO().isReverse()) {
                 nextStep = (nextStep + listSize) % listSize;
@@ -450,7 +449,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             nextStep = reverse ? nextStep + listSize : nextStep;
             nextStep = (nextStep) % listSize;
         }else{
-            nextStep = Math.abs(Math.max(0,Math.min(nextStep,getMirageWorlds().size()-1)));
+            nextStep = Math.abs(Math.max(0,Math.min(nextStep,listSize-1)));
         }
         setStep(nextStep);
         return nextStep;
@@ -504,12 +503,13 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             boolean isPowered = blockEntity.isPowered();
             boolean isTopPowered = blockEntity.isTopPowered();
             boolean areSidesPowered = blockEntity.areSidesPowered();
-
+            MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
             if(!isPowered) {
                 blockEntity.setMirageWorldIndex(0);
+                mirageProjectorBook.setStep(0);
                 blockEntity.previousTime = System.currentTimeMillis();
             }else{
-                MirageProjectorBook mirageProjectorBook = blockEntity.getBookSettingsPOJO();
+
                 if (mirageProjectorBook.isAutoPlay()) {
                     if (!blockEntity.isPause()) {
                         int nextIndex = blockEntity.nextMirageWorldIndex(mirageListLength);
