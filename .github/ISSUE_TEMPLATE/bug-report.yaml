@@ -6,7 +6,7 @@ assignees: []
 body:
 - type: checkboxes
   attributes:
-    label: This issue occurs when only Valkyrien Skies and addons are installed and no other mods
+    label: This issue occurs when only Mirage is installed and no other mods
     options:
       - label: I have tested this issue and it occurs when no other mods are installed
         required: true
@@ -28,7 +28,6 @@ body:
     options:
       - Forge
       - Fabric
-      - Quilt
   validations:
     required: true
 - type: textarea
