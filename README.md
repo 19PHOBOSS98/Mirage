@@ -15,11 +15,19 @@
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
 </div>
 
+
 <div align="center">
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
-  <a href="https://youtu.be/XtJSwktTuuw"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
+  <a href="https://youtu.be/LpBEGNvNQbg"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/8c7b4803-f063-4b24-83de-9e3601528c6d" alt="SHOWREEL"></a>
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
 </div>
+
+<div align="center">
+  <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
+  <a href="https://youtu.be/XtJSwktTuuw"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/25663a1c-aaef-4814-8a05-4176fe9bf3d2" alt="GUIDE"></a>
+  <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
+</div>
+
 
 <div align="center">
   
@@ -42,15 +50,6 @@
 
 
 
-<div align="center">
-  <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
-  <h3>TUTORIAL VIDEO</h3>
-  <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
-
-  
-  <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
-  
-</div>
 
 <!--div align="center">
   
