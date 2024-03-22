@@ -5,78 +5,82 @@
 </div>
 
 <div align="center">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   <img alt="Modrinth Downloads" src="https://img.shields.io/modrinth/dt/bbn86mnI?logo=modrinth&label=&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c">
   <img alt="Modrinth Version" src="https://img.shields.io/modrinth/v/bbn86mnI">
 
 
   <!--img src="https://img.shields.io/modrinth/dt/fabric-api?logo=modrinth&label=&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c" alt="Modrinth"-->
   
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
 
 <div align="center">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
 
 <div align="center">
   
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   
   <h3>ABOUT</h3>
   <p>Mirage allows you to project and animate (in real time) noncollidable minecraft structures</p>
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
 
 <div align="center">
   
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   
   <h3>WHY DID I MAKE THIS MOD?</h3>
-  <p>At first I wanted to dress up my hound turrets without too much hastle... but then I got carried away:</p>
-  <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <p>At first I wanted to be able to reskin my hound turrets without too much hastle... but then I got carried away:</p>
+  <a href="https://youtu.be/0cdySOMu1Qw?si=PKmBk1rKl-OkHPWN"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/0fd69133-f4af-4b40-92ff-6aa20dd6586c" alt="CF"></a>
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
 
 
 
 <div align="center">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   <h3>TUTORIAL VIDEO</h3>
   <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
+
   
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
   
 </div>
 
 <div align="center">
   
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
-  <a href="">WIKI</a>
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
+  <h3><a href="">WIKI</a></h3>
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
   
 </div>
 
 <div align="center">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   <h3>SPECIAL THANKS</h3>
   <p>I like to thank the <a href="https://modrinth.com/mod/framedblocks">FramedBlocks</a> mod devs for pointing me to the right direction when I first started out. I really appreciate it.</p>
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
 
 <div align="center">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   <h3>WANT SOME DECOBEACONS?</h3>
-  <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/f4be3e60-2678-4bf4-a624-b53fda05e8a2" alt="decobeacons" height="100"></a>
+  </br>
+  </br>
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
+
  
 <div align="center">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/2f062bd9-d8cd-4425-8bcb-00096ee885e6" alt="CF">
-  <a href="https://www.youtube.com/channel/UCmdUkIr-zCxO9CvOLxeSzlg"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/9c560bb7-8bb3-4ee6-97bb-4cd32c046bea" alt="CF"></a>
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/2f062bd9-d8cd-4425-8bcb-00096ee885e6" alt="krakenemblem">
+  <a href="https://www.youtube.com/channel/UCmdUkIr-zCxO9CvOLxeSzlg"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/9c560bb7-8bb3-4ee6-97bb-4cd32c046bea" alt="yt"></a>
   
-  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
 </div>
