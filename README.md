@@ -16,15 +16,18 @@
 
 <div align="center">
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
-  <p>Mirage allows you to project and animate (in real time) noncollidable minecraft structures in the world using The Mirage Projector.</p>
+  <a href=""><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/be86255b-6c01-4f94-a4d4-bbafb35c5df4" alt="CF"></a>
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
 </div>
 
 <div align="center">
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
-  <p>I like to thank the <a href="https://modrinth.com/mod/framedblocks">FramedBlocks</a> mod devs for pointing me to the right direction when I first started out. I really appreciate it.</p>
+  <p>ABOUT</p>
+  <p>Mirage allows you to project and animate (in real time) noncollidable minecraft structures in the world using The Mirage Projector.</p>
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
 </div>
+
+
 
 <div align="center">
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
@@ -33,6 +36,13 @@
   </br>
   <a href="">WIKI</a>
 
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
+</div>
+
+<div align="center">
+  <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="CF">
+  <p>SPECIAL THANKS</p>
+  <p>I like to thank the <a href="https://modrinth.com/mod/framedblocks">FramedBlocks</a> mod devs for pointing me to the right direction when I first started out. I really appreciate it.</p>
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="CF">
 </div>
  
