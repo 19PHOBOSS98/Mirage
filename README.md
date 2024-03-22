@@ -69,7 +69,7 @@
 <div align="center">
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
   <h3>WANT SOME DECOBEACONS?</h3>
-  <a href="https://youtu.be/bNsv9aqplsU?si=gbLfVJg8t-lp3E1A"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/f4be3e60-2678-4bf4-a624-b53fda05e8a2" alt="decobeacons" height="100"></a>
+  <a href="https://modrinth.com/mod/decobeacons"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/f4be3e60-2678-4bf4-a624-b53fda05e8a2" alt="decobeacons" height="100"></a>
   </br>
   </br>
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
