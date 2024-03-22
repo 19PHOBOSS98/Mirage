@@ -44,11 +44,9 @@
   
   <h3>WHY DID I MAKE THIS MOD?</h3>
   <p>At first I wanted to be able to reskin my hound turrets without too much hastle... but then I got carried away:</p>
-  <a href="https://youtu.be/0cdySOMu1Qw?si=PKmBk1rKl-OkHPWN"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/0fd69133-f4af-4b40-92ff-6aa20dd6586c" alt="CF"></a>
+  <a href="https://youtu.be/0cdySOMu1Qw?si=PKmBk1rKl-OkHPWN"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/0c42e716-e676-428c-9c9b-5178d81343a6" alt="CF"></a>
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
 </div>
-
-
 
 
 <!--div align="center">
