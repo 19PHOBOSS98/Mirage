@@ -76,11 +76,10 @@
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
 </div>
 
- 
 <div align="center">
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/2f062bd9-d8cd-4425-8bcb-00096ee885e6" alt="krakenemblem"></picture>
-  <a href="https://www.youtube.com/channel/UCmdUkIr-zCxO9CvOLxeSzlg"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/9c560bb7-8bb3-4ee6-97bb-4cd32c046bea" alt="yt"></a>
+  <a href="https://www.youtube.com/channel/UCmdUkIr-zCxO9CvOLxeSzlg"><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/eaed673b-eda2-43b7-9312-60868037690a" alt="yt"></a>
   
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
 </div>
