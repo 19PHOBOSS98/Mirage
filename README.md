@@ -52,13 +52,13 @@
   
 </div>
 
-<div align="center">
+<!--div align="center">
   
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
   <h3><a href="">WIKI</a></h3>
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider">
   
-</div>
+</div-->
 
 <div align="center">
   <img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180">
