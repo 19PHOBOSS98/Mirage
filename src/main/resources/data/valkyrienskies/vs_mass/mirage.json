@@ -1,6 +1,6 @@
 [
   {
     "block": "mirage:mirage_block",
-    "mass": 1.0
+    "mass": 10.0
   }
 ]
