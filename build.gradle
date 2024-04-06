@@ -178,7 +178,7 @@ dependencies {
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.18.2-40.2.0'
+    minecraft 'net.minecraftforge:forge:1.18.2-40.2.4'
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.18:3.0.57')
@@ -186,21 +186,22 @@ dependencies {
     compileOnly( fg.deobf("curse.maven:oculus-581495:4578744"))
     compileOnly( fg.deobf("curse.maven:embeddium-908741:5067973"))//https://modrinth.com/mod/embeddium/version/0.3.0+mc1.18.2
     compileOnly( fg.deobf("curse.maven:framedblocks-441647:4567924"))
+    compileOnly( fg.deobf("com.simibubi:create:1.18.2-0.5.1.f"))
     compileOnly( fg.deobf("net.phoboss:decobeacons:0.0.1-1.18.2-Forge"))
 
     runtimeOnly fg.deobf("net.phoboss:decobeacons:0.0.1-1.18.2-Forge")
-    runtimeOnly fg.deobf("com.simibubi:create:1.18.2-0.5.0.i")
-    runtimeOnly fg.deobf("com.jozufozu:flywheel:forge-1.18.2-0.6.8.a")
-    runtimeOnly fg.deobf("rbasamoyai:createbigcannons:forge-1.18.2-0.5.1.a-nightly-03ce570")
-    runtimeOnly fg.deobf("com.github.talrey:createdeco:1.2.12-1.18.2")
+    runtimeOnly fg.deobf("com.simibubi:create:1.18.2-0.5.1.f")
+    //runtimeOnly fg.deobf("com.jozufozu:flywheel:forge-1.18.2-0.6.8.a")
+    //runtimeOnly fg.deobf("rbasamoyai:createbigcannons:forge-1.18.2-0.5.4-nightly-4eb8cfe")
+    runtimeOnly fg.deobf("com.github.talrey:createdeco:1.3.3-1.18.2")
 
     runtimeOnly fg.deobf("dev:architectury:4.11.93-forge")
-    runtimeOnly fg.deobf("org.valkyrienskies:eureka:1.1.0-beta.8")
+    runtimeOnly fg.deobf("org.valkyrienskies:eureka:1.4.0-beta.1")
     runtimeOnly fg.deobf("kotlin:kotlinforforge:3.12.0-all")
-    runtimeOnly fg.deobf("org.valkyrienskies:valkyrienskies:118-2.1.0-beta.14")
+    runtimeOnly fg.deobf("org.valkyrienskies:valkyrienskies:118-2.1.1-beta.5")
 
-    runtimeOnly fg.deobf("dan200.computercraft:cc-tweaked:1.18.2-1.101.3")
-    runtimeOnly fg.deobf("net.techtastic:vc:1.5.2+2090972a50")
+    //runtimeOnly fg.deobf("dan200.computercraft:cc-tweaked:1.18.2-1.101.3")
+    //runtimeOnly fg.deobf("io.github.techtastic:cc_vs:1.18.2-forge-0.0.8")
 
     runtimeOnly fg.deobf("curse.maven:botania-225643:3936568")
     runtimeOnly fg.deobf("curse.maven:curios-309927:4590652")
@@ -210,16 +211,16 @@ dependencies {
 
     runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
 
-    runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
+    //runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 
     //COMMENTOUT when running in server//
-    runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
+    /*runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
     //runtimeOnly fg.deobf("curse.maven:rubidium-574856:4494903")
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
-    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")
+    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")*/
 
 }
 
