@@ -3,6 +3,7 @@ package net.phoboss.mirage.client.rendering.customworld;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
@@ -335,10 +336,17 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
 
     //WIP FramedBlocks compat
     public static boolean shouldRenderModelData(BlockEntity blockEntity){
-        if(ModList.get().isLoaded("framedblocks")) {
-            return blockEntity instanceof FramedBlockEntity;
+        boolean result = false;
+        if(ModList.get().isLoaded("framedblocks")){
+            result = blockEntity instanceof FramedBlockEntity;
         }
-        return false;
+        if(result){
+            return true;
+        }
+        if(ModList.get().isLoaded("create")) {
+            result = blockEntity instanceof CopycatBlockEntity;
+        }
+        return result;
     }
     //WIP FramedBlocks compat
 
