@@ -6,8 +6,8 @@
 
 <div align="center">
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
-  <img alt="Modrinth Downloads" src="https://img.shields.io/modrinth/dt/bbn86mnI?logo=modrinth&label=&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c">
-  <img alt="Modrinth Version" src="https://img.shields.io/modrinth/v/bbn86mnI">
+  <a href="https://modrinth.com/mod/mirage_mod"><img alt="Modrinth Downloads" src="https://img.shields.io/modrinth/dt/bbn86mnI?logo=modrinth&label=download&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c"></a>
+  <picture><img alt="Modrinth Version" src="https://img.shields.io/modrinth/v/bbn86mnI"></picture>
 
 
   <!--img src="https://img.shields.io/modrinth/dt/fabric-api?logo=modrinth&label=&suffix=%20&style=flat&color=242629&labelColor=5ca424&logoColor=1c1c1c" alt="Modrinth"-->
