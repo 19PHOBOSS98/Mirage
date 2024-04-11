@@ -22,7 +22,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'org.spongepowered.mixin'
 
-version = '0.0.1-1.18.2-Forge'
+version = '0.0.2-1.18.2-Forge'
 group = 'net.phoboss.mirage' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mirage'
 
@@ -207,6 +207,8 @@ dependencies {
     runtimeOnly fg.deobf("curse.maven:curios-309927:4590652")
     runtimeOnly fg.deobf("curse.maven:patchouli-306770:3846086")
 
+    runtimeOnly fg.deobf("curse.maven:simple-neon-lights-693873:4099762")
+
     runtimeOnly fg.deobf("curse.maven:immersive-engineering-231951:4412849")
 
     runtimeOnly fg.deobf("curse.maven:framedblocks-441647:4567924")
@@ -214,13 +216,13 @@ dependencies {
     //runtimeOnly "maven.modrinth:c7m1mi73:vxZXdQPK"//https://modrinth.com/mod/packet-fixer/version/vxZXdQPK //added to fix server error: "Tried to read NBT tag that was too big"
 
     //COMMENTOUT when running in server//
-    /*runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
+    runtimeOnly fg.deobf("curse.maven:oculus-581495:4578744")
     runtimeOnly fg.deobf("curse.maven:embeddium-908741:5067973")
     //runtimeOnly fg.deobf("curse.maven:rubidium-574856:4494903")
 
     runtimeOnly fg.deobf("curse.maven:minemaresurection-596719:3831181")
     runtimeOnly fg.deobf("curse.maven:cmdcam-251244:4426920")
-    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")*/
+    runtimeOnly fg.deobf("curse.maven:creativecore-257814:4629846")
 
 }
 
