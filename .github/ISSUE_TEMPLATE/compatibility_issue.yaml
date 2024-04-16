@@ -20,7 +20,7 @@ body:
   attributes:
     label: This issue occurs when only Mirage and the mod I have specified are installed and no other mods
     options:
-      - label: I have tested this issue and it occurs with only Valkyrien Skies, addons, and the mod I have specified
+      - label: I have tested this issue and it occurs with only Mirage, and the mod I have specified
 - type: dropdown
   attributes:
     label: Minecraft Version
