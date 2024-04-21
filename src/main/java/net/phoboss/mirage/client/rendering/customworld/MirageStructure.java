@@ -6,10 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.*;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -25,8 +22,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class MirageStructure extends StructureTemplate {
 
@@ -229,6 +225,108 @@ public class MirageStructure extends StructureTemplate {
 
 
         });*/
+    }
 
+    public static CompoundTag getFragmentStructureNBTTemplate(ListTag size,int dataVersion){
+        CompoundTag fragmentStructureNBT = new CompoundTag();
+        fragmentStructureNBT.put("size", size);
+        fragmentStructureNBT.putInt("DataVersion",dataVersion);
+
+        return fragmentStructureNBT;
+    }
+    public static List<CompoundTag> splitStructureNBT(CompoundTag structureNBT){
+        List<CompoundTag> splitStructureNBTList = new ArrayList<>();
+        int dataVersion = structureNBT.getInt("DataVersion");
+        ListTag size = (ListTag)structureNBT.get("size");
+
+        ListTag entitiesNBT = structureNBT.getList("entities", 10);
+
+        ListTag blocksNBT = structureNBT.getList("blocks", 10);
+
+
+        ListTag paletteNBT = new ListTag();
+        if (structureNBT.contains("palettes", 9)) {
+            ListTag listTag2 = structureNBT.getList("palettes", 9);
+
+            for(int i = 0; i < listTag2.size(); ++i) {
+                paletteNBT.addAll(listTag2.getList(i));
+            }
+        } else {
+            paletteNBT = structureNBT.getList("palette", 10);
+        }
+
+        CompoundTag fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
+
+        ListTag fragmentEntities = new ListTag();
+        ListTag fragmentBlocks = new ListTag();
+        ListTag fragmentPalette = new ListTag();
+
+        fragmentStructureNBT.put("entities", fragmentEntities);
+        fragmentStructureNBT.put("blocks", fragmentBlocks);
+        fragmentStructureNBT.put("palette", fragmentPalette);
+
+        HashMap<Integer, List<CompoundTag>> sortedPaletteBlockList = new HashMap<>();
+        for(int i = 0; i < paletteNBT.size(); ++i) {
+            sortedPaletteBlockList.put(i,new ArrayList<>());
+        }
+        for(int i = 0; i < blocksNBT.size(); ++i) {
+            CompoundTag block = blocksNBT.getCompound(i);
+            int blockState = block.getInt("state");
+            block.putInt("state",0);
+            sortedPaletteBlockList.get(blockState).add(block);
+        }
+
+        for(int paletteIdx = 0; paletteIdx < paletteNBT.size(); ++paletteIdx) {
+            fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
+            fragmentEntities = new ListTag();
+            fragmentBlocks = new ListTag();
+
+            CompoundTag p = paletteNBT.getCompound(paletteIdx);
+            if(p.getString("Name").equals("minecraft:air")){
+                continue;
+            }
+            fragmentPalette = new ListTag();
+            fragmentPalette.add(p);
+
+            List<CompoundTag> blockList = sortedPaletteBlockList.get(paletteIdx);
+            for (CompoundTag block : blockList) {
+
+                fragmentBlocks.add(block);
+                fragmentStructureNBT.put("blocks", fragmentBlocks);
+                fragmentStructureNBT.put("palette", fragmentPalette);
+                if (fragmentStructureNBT.sizeInBytes() >= 262144){
+                    fragmentStructureNBT.put("entities", fragmentEntities);
+                    splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+                    fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
+                    fragmentEntities = new ListTag();
+                    fragmentBlocks = new ListTag();
+                }
+            }
+            splitStructureNBTList.add(fragmentStructureNBT.copy());
+        }
+
+        for(int i = 0; i < entitiesNBT.size(); ++i) {
+            CompoundTag entity = entitiesNBT.getCompound(i);
+            fragmentEntities.add(entity);
+
+            fragmentStructureNBT.put("entities", fragmentEntities);
+
+            if (fragmentStructureNBT.sizeInBytes() >= 262144){
+                fragmentStructureNBT.put("blocks", fragmentBlocks);
+                fragmentStructureNBT.put("palette", fragmentPalette);
+                splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+                fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
+                fragmentEntities = new ListTag();
+                fragmentBlocks = new ListTag();
+            }
+        }
+
+
+
+        splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+        return splitStructureNBTList;
     }
 }

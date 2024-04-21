@@ -14,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.phoboss.mirage.blocks.ModBlockEntities;
@@ -21,6 +22,7 @@ import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.client.rendering.ModRendering;
 import net.phoboss.mirage.items.ModItemGroups;
 import net.phoboss.mirage.items.ModItems;
+import net.phoboss.mirage.network.MirageNBTPacketHandler;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 
@@ -43,7 +45,9 @@ public class Mirage
 
     public static JsonObject CONFIGS;
 
-    public static ExecutorService THREAD_POOL;
+    public static ExecutorService CLIENT_THREAD_POOL;
+
+    public static ExecutorService SERVER_THREAD_POOL;
 
     public Mirage()
     {
@@ -68,6 +72,9 @@ public class Mirage
 
     private void setup(final FMLCommonSetupEvent event)
     {
+        event.enqueueWork(() -> {
+            MirageNBTPacketHandler.register();
+        });
         initConfigFile();
         initSchematicsFolder();
     }
@@ -80,14 +87,14 @@ public class Mirage
         }
     }
 
-    @Mod.EventBusSubscriber(modid = Mirage.MOD_ID, value = Dist.CLIENT)
+    /*@Mod.EventBusSubscriber(modid = Mirage.MOD_ID, value = Dist.CLIENT)
     public class ClientModEvents {
         @SubscribeEvent
         public static void onWorldLoad(LevelEvent.Load event){
             if(event.getLevel().isClientSide()) {
                 System.gc();
-                THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
-                        .namingPattern("MirageLoader-%d")
+                CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                        .namingPattern("ClientMirageLoader-%d")
                         .priority(Thread.MAX_PRIORITY)
                         .build());
             }
@@ -95,10 +102,39 @@ public class Mirage
         @SubscribeEvent
         public static void onWorldUnload(LevelEvent.Unload event){
             if(event.getLevel().isClientSide()) {
-                THREAD_POOL.shutdownNow();
+                CLIENT_THREAD_POOL.shutdownNow();
             }
         }
+    }*/
 
+    @Mod.EventBusSubscriber(modid = Mirage.MOD_ID)
+    public class CommonModEvents {
+        @SubscribeEvent
+        public static void onWorldLoad(LevelEvent.Load event){
+            if(event.getLevel().isClientSide()) {
+                System.gc();
+                CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                        .namingPattern("ClientMirageLoader-%d")
+                        .priority(Thread.MAX_PRIORITY)
+                        .build());
+            }else{
+                System.gc();
+                SERVER_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                        .namingPattern("ServerMirageLoader-%d")
+                        .priority(Thread.MAX_PRIORITY)
+                        .build());
+            }
+        }
+        @SubscribeEvent
+        public static void onWorldUnload(LevelEvent.Unload event){
+            if(event.getLevel().isClientSide()) {
+                System.gc();
+                CLIENT_THREAD_POOL.shutdownNow();
+            }else{
+                System.gc();
+                SERVER_THREAD_POOL.shutdownNow();
+            }
+        }
     }
 
     public static void initFolder(Path path){

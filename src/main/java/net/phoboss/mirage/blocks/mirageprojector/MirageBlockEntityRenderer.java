@@ -13,14 +13,12 @@ import net.minecraft.world.phys.Vec3;
 import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.jetbrains.annotations.Nullable;
-import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -40,7 +38,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         if(!Mirage.CONFIGS.get("enableRecursiveMirage").getAsBoolean() && blockEntity.getLevel() instanceof MirageWorld){
             return;//recursive mirages are unsafe
         }
-        ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
+        ConcurrentHashMap<Integer, MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
         int mirageWorldIndex = blockEntity.getMirageWorldIndex();
         if(!mirageWorldList.containsKey(mirageWorldIndex)){
             return;
