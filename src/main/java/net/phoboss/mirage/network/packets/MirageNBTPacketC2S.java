@@ -17,6 +17,7 @@ import net.phoboss.mirage.client.rendering.customworld.MirageStructure;
 import net.phoboss.mirage.network.MirageNBTPacketHandler;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -26,23 +27,28 @@ public class MirageNBTPacketC2S {
     String fileName;
 
     int mirageWorldIndex;
+
+    List<Integer> mirageFragmentCheckList;
     public MirageNBTPacketC2S() {
     }
-    public MirageNBTPacketC2S(BlockPos pos,String file,int mirageWorldIndex) {
+    public MirageNBTPacketC2S(BlockPos pos, String file, int mirageWorldIndex, List<Integer> mirageFragmentCheckList) {
         this.mirageBlockPosition = pos;
         this.fileName = file;
         this.mirageWorldIndex = mirageWorldIndex;
+        this.mirageFragmentCheckList = mirageFragmentCheckList;
     }
     public MirageNBTPacketC2S(FriendlyByteBuf buf) {
         this.mirageBlockPosition = buf.readBlockPos();
         this.fileName = buf.readUtf();
         this.mirageWorldIndex = buf.readInt();
+        this.mirageFragmentCheckList = buf.readCollection(c -> new ArrayList<>(), FriendlyByteBuf::readInt);
     }
 
     public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(this.mirageBlockPosition);
         buf.writeUtf(this.fileName);
         buf.writeInt(this.mirageWorldIndex);
+        buf.writeCollection(this.mirageFragmentCheckList, FriendlyByteBuf::writeInt);
     }
 
     public static class Handler {
@@ -62,6 +68,7 @@ public class MirageNBTPacketC2S {
                 BlockPos mirageBlockEntityPos = msg.mirageBlockPosition;
                 String fileName = msg.fileName;
                 int mirageWorldIdx = msg.mirageWorldIndex;
+                List<Integer> checkList = msg.mirageFragmentCheckList;
 
                 try {
                     BlockEntity be = level.getBlockEntity(mirageBlockEntityPos);
@@ -82,6 +89,9 @@ public class MirageNBTPacketC2S {
                             List<CompoundTag> splitStructureNBTList = MirageStructure.splitStructureNBT(structureNBT);
                             int totalFragments = splitStructureNBTList.size();
                             for(int fragmentIdx=0; fragmentIdx<totalFragments; fragmentIdx++){
+                                if(checkList.contains(fragmentIdx)){
+                                    continue;
+                                }
                                 CompoundTag splitStructureNBT = splitStructureNBTList.get(fragmentIdx);
 
                                 MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(mirageBlockEntityPos, mirageWorldIdx, fragmentIdx, totalFragments, false, splitStructureNBT),player);

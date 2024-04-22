@@ -34,6 +34,7 @@ import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.RenderUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.*;
@@ -121,7 +122,11 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             for (int mirageWorldIndex = 0;mirageWorldIndex<mirageCount;mirageWorldIndex++) {
                 //freeMirageWorldMemory(mirageCount);
                 this.mirageWorlds.put(mirageWorldIndex,new MirageWorld(this.level));
-                MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(getBlockPos(),getFileNames().get(mirageWorldIndex),mirageWorldIndex));
+                MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
+                        getBlockPos(),
+                        getFileNames().get(mirageWorldIndex),
+                        mirageWorldIndex,
+                        new ArrayList<>()));
             }
         };
 
@@ -200,16 +205,25 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
                 if (mirageWorld.fragmentsAreComplete(totalFragments)) {
                     mirageWorld.setOverideRefreshBuffer(true);
                 }
-                freeMirageWorldMemory(totalFragments);
+                if(fragmentIdx == totalFragments-1){
+                    MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
+                            getBlockPos(),
+                            getFileNames().get(mirageWorldIndex),
+                            mirageWorldIndex,
+                            mirageWorld.getMirageFragmentCheckList()));
+                }
+                System.gc();
+
+
             }
 
         }catch (InterruptedException e) {
             resetMirageWorlds();
-            freeMirageWorldMemory(totalFragments);
-            throw new Exception("MirageLoader thread was interrupted..."+totalFragments,e);
+            System.gc();
+            throw new Exception("ClientMirageLoader thread was interrupted... NBT Mirage: "+getFileNames().get(mirageWorldIndex)+" Fragment: "+fragmentIdx+"/"+totalFragments,e);
         }
         catch (Exception e) {
-            throw new Exception("Couldn't read nbt mirage:"+ getFileNames().get(mirageWorldIndex) +" fragment: "+ fragmentIdx,e);
+            throw new Exception("Couldn't read NBT Mirage:"+ getFileNames().get(mirageWorldIndex) +" fragment: "+ fragmentIdx+"/"+totalFragments,e);
         }
     }
     public void loadMirageWorldFragment(MirageWorld mirageWorld, CompoundTag nbt, Vec3i move, int rotate, String mirror) {
