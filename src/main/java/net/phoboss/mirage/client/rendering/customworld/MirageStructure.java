@@ -4,10 +4,7 @@ import com.google.common.collect.Lists;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.HangingEntity;
@@ -19,10 +16,11 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.Vec3;
+import net.phoboss.mirage.Mirage;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.RecursiveAction;
 
 public class MirageStructure extends StructureTemplate {
 
@@ -222,6 +220,169 @@ public class MirageStructure extends StructureTemplate {
 
 
         });*/
-
     }
+
+    public static CompoundTag getFragmentStructureNBTTemplate(ListTag size,int dataVersion){
+        CompoundTag fragmentStructureNBT = new CompoundTag();
+        fragmentStructureNBT.put("size", size);
+        fragmentStructureNBT.putInt("DataVersion",dataVersion);
+
+        return fragmentStructureNBT;
+    }
+    public static List<CompoundTag> splitStructureNBT(CompoundTag structureNBT){
+        List<CompoundTag> splitStructureNBTList = new ArrayList<>();
+        int dataVersion = structureNBT.getInt("DataVersion");
+        ListTag size = (ListTag)structureNBT.get("size");
+
+        ListTag entitiesNBT = structureNBT.getList("entities", 10);
+
+        ListTag blocksNBT = structureNBT.getList("blocks", 10);
+
+
+        ListTag paletteNBT = new ListTag();
+        if (structureNBT.contains("palettes", 9)) {
+            ListTag listTag2 = structureNBT.getList("palettes", 9);
+
+            for(int i = 0; i < listTag2.size(); ++i) {
+                paletteNBT.addAll(listTag2.getList(i));
+            }
+        } else {
+            paletteNBT = structureNBT.getList("palette", 10);
+        }
+
+        CompoundTag fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
+
+        ListTag fragmentEntities = new ListTag();
+        ListTag fragmentBlocks = new ListTag();
+        ListTag fragmentPalette = new ListTag();
+
+        fragmentStructureNBT.put("entities", fragmentEntities);
+        fragmentStructureNBT.put("blocks", fragmentBlocks);
+        fragmentStructureNBT.put("palette", fragmentPalette);
+
+        HashMap<Integer, List<CompoundTag>> sortedPaletteBlockList = new HashMap<>();
+        for(int i = 0; i < paletteNBT.size(); ++i) {
+            sortedPaletteBlockList.put(i,new ArrayList<>());
+        }
+        for(int i = 0; i < blocksNBT.size(); ++i) {
+            CompoundTag block = blocksNBT.getCompound(i);
+            int blockState = block.getInt("state");
+            block.putInt("state",0);
+            sortedPaletteBlockList.get(blockState).add(block);
+        }
+        try {
+            for (int paletteIdx = 0; paletteIdx < paletteNBT.size(); ++paletteIdx) {
+                fragmentStructureNBT = getFragmentStructureNBTTemplate(size, dataVersion);
+                fragmentEntities = new ListTag();
+                fragmentBlocks = new ListTag();
+
+                CompoundTag p = paletteNBT.getCompound(paletteIdx);
+                if (p.getString("Name").equals("minecraft:air")) {
+                    continue;
+                }
+                fragmentPalette = new ListTag();
+                fragmentPalette.add(p);
+
+                List<CompoundTag> blockList = sortedPaletteBlockList.get(paletteIdx);
+                for (CompoundTag block : blockList) {
+
+                    fragmentBlocks.add(block);
+                    fragmentStructureNBT.put("blocks", fragmentBlocks);
+                    fragmentStructureNBT.put("palette", fragmentPalette);
+                    int byteSize = getSizeInBytes(fragmentStructureNBT, 0);
+                    if (byteSize >= 262144) {
+                        fragmentStructureNBT.put("entities", fragmentEntities);
+                        splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+                        fragmentStructureNBT = getFragmentStructureNBTTemplate(size, dataVersion);
+                        fragmentEntities = new ListTag();
+                        fragmentBlocks = new ListTag();
+                    }
+                }
+                splitStructureNBTList.add(fragmentStructureNBT.copy());
+            }
+
+            for (int i = 0; i < entitiesNBT.size(); ++i) {
+                CompoundTag entity = entitiesNBT.getCompound(i);
+                fragmentEntities.add(entity);
+
+                fragmentStructureNBT.put("entities", fragmentEntities);
+                int byteSize = getSizeInBytes(fragmentStructureNBT, 0);
+                if (byteSize >= 262144) {
+                    fragmentStructureNBT.put("blocks", fragmentBlocks);
+                    fragmentStructureNBT.put("palette", fragmentPalette);
+                    splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+                    fragmentStructureNBT = getFragmentStructureNBTTemplate(size, dataVersion);
+                    fragmentEntities = new ListTag();
+                    fragmentBlocks = new ListTag();
+                }
+            }
+        }catch (Exception e){
+            Mirage.LOGGER.error("Error while fragmenting NBT",e);
+        }
+
+
+
+        splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+        return splitStructureNBTList;
+    }
+
+    public static int getSizeInBytes(Tag baseTag, int recursionCount) throws Exception {
+        if(baseTag instanceof CompoundTag tag){
+            if(recursionCount>=50){
+                throw new Exception("CompoundTag too deep!");
+            }
+            int i = 48;
+
+            for(String key : tag.getAllKeys()) {
+                i += 28 + 2 * key.length();
+                i += 36;
+                i += getSizeInBytes(tag.get(key),recursionCount+1);
+            }
+
+            return i;
+        }else
+        if(baseTag instanceof ByteArrayTag tag){
+            return 24 + 1 * tag.size();
+        }else
+        if(baseTag instanceof ByteTag tag){
+            return 9;
+        }else
+        if(baseTag instanceof DoubleTag || baseTag instanceof LongTag){
+            return 16;
+        }else
+        if(baseTag instanceof EndTag tag){
+            return 8;
+        }else
+        if(baseTag instanceof FloatTag || baseTag instanceof IntTag){
+            return 12;
+        }else
+        if(baseTag instanceof IntArrayTag tag){
+            return 24 + 4 * tag.size();
+        }else
+        if(baseTag instanceof ListTag tag){
+            if(recursionCount>=50){
+                throw new Exception("ListTag too deep!");
+            }
+            int i = 37;
+            i += 4 * tag.size();
+            for(int j=0;j<tag.size();j++){
+                i += getSizeInBytes(tag.get(j),recursionCount+1);
+            }
+            return i;
+        }else
+        if(baseTag instanceof LongArrayTag tag){
+            return 24 + 8 * tag.size();
+        }else
+        if(baseTag instanceof StringTag tag){
+            return 24 + 8 * tag.getAsString().length();
+        }else
+        if(baseTag instanceof ShortTag tag){
+            return 10;
+        }
+        return 9999999;//sure why not...
+    }
+
 }

@@ -24,6 +24,8 @@ import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.client.rendering.customworld.MirageStructure;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import net.phoboss.mirage.client.rendering.customworld.StructureStates;
+import net.phoboss.mirage.network.MirageNBTPacketHandler;
+import net.phoboss.mirage.network.packets.MirageNBTPacketC2S;
 import net.phoboss.mirage.utility.RedstoneStateChecker;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.AnimationState;
@@ -90,7 +92,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             System.gc();
         }
     }
-    private ConcurrentHashMap<Integer,MirageWorld> mirageWorlds;
+    private ConcurrentHashMap<Integer, MirageWorld> mirageWorlds;
 
     public void resetMirageWorlds() {
         if(mirageWorlds != null){
@@ -120,52 +122,80 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         }
     }
 
-    public void executeNewMirageLoaderTask(){
-        stopMirageLoader();
-        this.mirageLoaderFuture = Mirage.THREAD_POOL.submit(() -> {
+    public void requestForMirageFilesFromServer(){
+        resetMirageWorlds(getFileNames().size());
+        Runnable myThread = () ->
+        {
+            try {
+                int mirageCount = getFileNames().size();
+                Thread.currentThread().setName("myThread");
+                for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
+                    //freeMirageWorldMemory(mirageCount);
+                    this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level));
+                    MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
+                            getBlockPos(),
+                            getFileNames().get(mirageWorldIndex),
+                            mirageWorldIndex,
+                            new ArrayList<>()));
+                }
+            }catch (OutOfMemoryError e){
+                requestForMirageFilesFromServer();
+                Mirage.LOGGER.error("Out Of Memory",e);
+            }catch (Exception e){
+                Mirage.LOGGER.error("Exception on requestForMirageFilesFromServer",e);
+            }
+        };
+
+        Thread run = new Thread(myThread);
+
+        // Starting the thread
+        run.start();
+
+    }
+
+    public void uploadMirageFragment(int mirageWorldIndex, int fragmentIdx, int totalFragments, CompoundTag nbtMirageFragment){
+        //stopMirageLoader();
+        this.mirageLoaderFuture = Mirage.CLIENT_THREAD_POOL.submit(() -> {
             try{
-                loadMirage();
+                loadMirageFragment(mirageWorldIndex, fragmentIdx, totalFragments, nbtMirageFragment);
             }catch (Exception e){
                 Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
             }
         });
     }
 
-    public void loadMirage() throws Exception{
+    public void loadMirageFragment(int mirageWorldIndex, int fragmentIdx, int totalFragments, CompoundTag nbtMirageFragment) throws Exception{
         if(this.mirageWorlds == null){
             return;
         }
-        String fileName = "";
-        int fileCount = 0;
+
         try {
-            List<String> files = getFileNames();
-            fileCount = files.size();
-            resetMirageWorlds(fileCount);
 
-            HashMap<Integer,Frame> frames = getBookSettingsPOJO().getFrames();
 
-            for(int i=0;i<fileCount;++i){
-                if(Thread.currentThread().isInterrupted() || getLevel().getBlockEntity(getBlockPos())==null){
-                    throw new InterruptedException();
-                }
-                Thread.currentThread().sleep(1000);
-                this.mirageWorlds.put(i,new MirageWorld(this.level));
+            if(Thread.currentThread().isInterrupted() || getLevel().getBlockEntity(getBlockPos())==null){
+                throw new InterruptedException();
+            }
+            //Thread.currentThread().sleep(1000);
 
-                MirageWorld mirageWorld = this.mirageWorlds.get(i);
 
-                fileName = files.get(i);
-                CompoundTag buildingNBT = getBuildingNbt(fileName);
+            MirageWorld mirageWorld = this.mirageWorlds.get(mirageWorldIndex);
+            synchronized (mirageWorld) {
+                mirageWorld.addMirageFragmentCheckList(fragmentIdx);
 
                 Vec3i actualMove = getMove();
                 int actualRotate = getRotate();
                 String actualMirror = getMirror();
 
+                HashMap<Integer, Frame> frames = getBookSettingsPOJO().getFrames();
                 Frame frame;
-                if(frames.containsKey(i)){
-                    frame = frames.get(i);
-                }else{
-                    loadMirageWorld(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
-                    continue;
+                if (frames.containsKey(mirageWorldIndex)) {
+                    frame = frames.get(mirageWorldIndex);
+                } else {
+                    loadMirageWorldFragment(mirageWorld, nbtMirageFragment, actualMove, actualRotate, actualMirror);
+                    if (mirageWorld.fragmentsAreComplete(totalFragments)) {
+                        mirageWorld.setOverideRefreshBuffer(true);
+                    }
+                    return;
                 }
 
                 String mainMirror = getMirror();
@@ -175,31 +205,44 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                 actualRotate += frame.getRotate();
 
 
-                if(mainMirror.equals(subMirror)){
+                if (mainMirror.equals(subMirror)) {
                     actualMirror = "NONE";
-                }else if(mainMirror.equals("NONE")){
+                } else if (mainMirror.equals("NONE")) {
                     actualMirror = subMirror;
-                }else if(subMirror.equals("NONE")){
+                } else if (subMirror.equals("NONE")) {
                     actualMirror = mainMirror;
-                }else {
+                } else {
                     actualMirror = "NONE";
                     actualRotate += 180;
                 }
 
                 actualRotate %= 360;
-                loadMirageWorld(mirageWorld,buildingNBT,actualMove,actualRotate,actualMirror);
+                loadMirageWorldFragment(mirageWorld, nbtMirageFragment, actualMove, actualRotate, actualMirror);
+                if (mirageWorld.fragmentsAreComplete(totalFragments)) {
+                    mirageWorld.setOverideRefreshBuffer(true);
+                }
+                if(fragmentIdx == totalFragments-1){
+                    MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
+                            getBlockPos(),
+                            getFileNames().get(mirageWorldIndex),
+                            mirageWorldIndex,
+                            mirageWorld.getMirageFragmentCheckList()));
+                }
+                System.gc();
+
+
             }
-            freeMirageWorldMemory(fileCount);
+
         }catch (InterruptedException e) {
             resetMirageWorlds();
-            freeMirageWorldMemory(fileCount);
-            throw new Exception("MirageLoader thread was interrupted..."+fileCount,e);
+            System.gc();
+            throw new Exception("ClientMirageLoader thread was interrupted... NBT Mirage: "+getFileNames().get(mirageWorldIndex)+" Fragment: "+fragmentIdx+"/"+totalFragments,e);
         }
         catch (Exception e) {
-            throw new Exception("Couldn't read nbt file: "+fileName,e);
+            throw new Exception("Couldn't read NBT Mirage:"+ getFileNames().get(mirageWorldIndex) +" fragment: "+ fragmentIdx+"/"+totalFragments,e);
         }
     }
-    public void loadMirageWorld(MirageWorld mirageWorld, CompoundTag nbt, Vec3i move, int rotate, String mirror) {
+    public void loadMirageWorldFragment(MirageWorld mirageWorld, CompoundTag nbt, Vec3i move, int rotate, String mirror) {
         if(!getLevel().isClientSide()) {
             return;
         }
@@ -216,15 +259,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         StructurePlaceSettings.setRotation(StructureStates.ROTATION_STATES.get(rotate));
         StructurePlaceSettings.setMirror(StructureStates.MIRROR_STATES.get(mirror));
 
-        mirageWorld.clearMirageWorld();
+        //mirageWorld.clearMirageWorld();
         mirageWorld.setHasBlockEntities(false);
         fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings,mirageWorld.random, Block.UPDATE_ALL);
-
-        //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
-        mirageWorld.setOverideRefreshBuffer(true);   //I couldn't find an Architectury API Event similar to Fabric's "ClientBlockEntityEvents.BLOCK_ENTITY_LOAD" event
-                                                        //I could try to use @ExpectPlatform but I couldn't find anything similar for Forge either.
-                                                        // So I just let the BER.render(...) method decide when's the best time to refresh the VertexBuffers :)
-
     }
 
     @Override
@@ -275,7 +312,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
     }
 
 
-    public ConcurrentHashMap<Integer,MirageWorld> getMirageWorlds() {
+    public ConcurrentHashMap<Integer, MirageWorld> getMirageWorlds() {
         return this.mirageWorlds;
     }
 
@@ -321,7 +358,8 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             setBookSettingsPOJO(newBook);
             this.mirageWorldIndex = nbt.getInt("mirageWorldIndex");
             if(shouldReloadMirage && getLevel()!=null && getLevel().isClientSide()) {
-                executeNewMirageLoaderTask();
+                //executeNewMirageLoaderTask();
+                requestForMirageFilesFromServer();
             }
         }catch (Exception e){
             Mirage.LOGGER.error("Error on readNBT: ",e);
@@ -583,6 +621,8 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         Vec3i offset = new Vec3i(512,512,512);
         return new AABB(pos.subtract(offset),pos.offset(offset));
     }
+
+
 }
 
 
