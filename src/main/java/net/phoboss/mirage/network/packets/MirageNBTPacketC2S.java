@@ -72,7 +72,7 @@ public class MirageNBTPacketC2S {
 
                 try {
                     BlockEntity be = level.getBlockEntity(mirageBlockEntityPos);
-                    if(be == null){
+                    if(be == null || be.isRemoved()){
                         player.displayClientMessage(Component.literal("Mirage Projector Not Found"), false);
                         throw new Exception("Mirage Projector Not Found");
                     }
