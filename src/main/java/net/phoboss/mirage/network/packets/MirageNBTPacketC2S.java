@@ -97,7 +97,7 @@ public class MirageNBTPacketC2S {
                                 MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(mirageBlockEntityPos, mirageWorldIdx, fragmentIdx, totalFragments, false, splitStructureNBT),player);
                             }
 
-                            //player.displayClientMessage(Component.literal("loading: "+fileName), false);
+                            player.displayClientMessage(Component.literal("loading: "+fileName + " total Fragments: "+totalFragments), false);
                         }catch (Exception e){
                             Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
                         }
