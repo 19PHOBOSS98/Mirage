@@ -291,7 +291,8 @@ public class MirageStructure extends StructureTemplate {
                     fragmentBlocks.add(block);
                     fragmentStructureNBT.put("blocks", fragmentBlocks);
                     fragmentStructureNBT.put("palette", fragmentPalette);
-                    if (getSizeInBytes(fragmentStructureNBT, 0) >= 262144) {
+                    int byteSize = getSizeInBytes(fragmentStructureNBT, 0);
+                    if (byteSize >= 262144) {
                         fragmentStructureNBT.put("entities", fragmentEntities);
                         splitStructureNBTList.add(fragmentStructureNBT.copy());
 
@@ -308,8 +309,8 @@ public class MirageStructure extends StructureTemplate {
                 fragmentEntities.add(entity);
 
                 fragmentStructureNBT.put("entities", fragmentEntities);
-
-                if (getSizeInBytes(fragmentStructureNBT, 0) >= 262144) {
+                int byteSize = getSizeInBytes(fragmentStructureNBT, 0);
+                if (byteSize >= 262144) {
                     fragmentStructureNBT.put("blocks", fragmentBlocks);
                     fragmentStructureNBT.put("palette", fragmentPalette);
                     splitStructureNBTList.add(fragmentStructureNBT.copy());
@@ -376,6 +377,12 @@ public class MirageStructure extends StructureTemplate {
         }else
         if(baseTag instanceof LongArrayTag tag){
             return 24 + 8 * tag.size();
+        }else
+        if(baseTag instanceof StringTag tag){
+            return 24 + 8 * tag.getAsString().length();
+        }else
+        if(baseTag instanceof ShortTag tag){
+            return 10;
         }
         return 9999999;//sure why not...
     }
