@@ -5,6 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.phoboss.mirage.client.rendering.ModRendering;
+import net.phoboss.mirage.network.MirageNBTPacketHandler;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import java.util.concurrent.Executors;
@@ -16,13 +17,15 @@ public class MirageClient implements ClientModInitializer {
         ModRendering.registerAll();
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             System.gc();
-            Mirage.THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
-                    .namingPattern("MirageLoader-%d")
+            Mirage.CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                    .namingPattern("ClientMirageLoader-%d")
                     .priority(Thread.MAX_PRIORITY)
                     .build());
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            Mirage.THREAD_POOL.shutdownNow();
+            Mirage.CLIENT_THREAD_POOL.shutdownNow();
         });
+
+        MirageNBTPacketHandler.registerS2CPackets();
     }
 }

@@ -6,12 +6,16 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
 import net.fabricmc.api.ModInitializer;
+
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
 import net.phoboss.mirage.items.ModItemGroups;
 import net.phoboss.mirage.items.ModItems;
+import net.phoboss.mirage.network.MirageNBTPacketHandler;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.bernie.geckolib.GeckoLib;
@@ -23,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Mirage implements ModInitializer {
 
@@ -33,8 +38,8 @@ public class Mirage implements ModInitializer {
 
 	public static JsonObject CONFIGS;
 
-	public static ExecutorService THREAD_POOL;
-
+	public static ExecutorService SERVER_THREAD_POOL;
+	public static ExecutorService CLIENT_THREAD_POOL;
 	@Override
 	public void onInitialize() {
 		GeckoLib.initialize();
@@ -46,6 +51,21 @@ public class Mirage implements ModInitializer {
 		ModBlocks.registerAll();
 		ModBlockEntities.registerAll();
 		ModItems.registerAll();
+		MirageNBTPacketHandler.registerC2SPackets();
+		initServerThread();
+	}
+
+	public static void initServerThread(){
+		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+			System.gc();
+			Mirage.SERVER_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+					.namingPattern("ServerMirageLoader-%d")
+					.priority(Thread.MAX_PRIORITY)
+					.build());
+		});
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			Mirage.SERVER_THREAD_POOL.shutdownNow();
+		});
 	}
 
 	public static void initFolder(Path path){
@@ -77,7 +97,6 @@ public class Mirage implements ModInitializer {
 		} catch (IOException e) {
 			LOGGER.error(e.getMessage(),e);
 		}
-
 	}
 	public static void initSchematicsFolder(){
 		try{
