@@ -10,6 +10,7 @@ import net.minecraft.util.Util;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class MirageBufferStorage {
     public Object2ObjectLinkedOpenHashMap<RenderLayer, VertexBuffer> mirageVertexBuffers = new Object2ObjectLinkedOpenHashMap<>();
 
@@ -75,6 +76,13 @@ public class MirageBufferStorage {
         this.mirageVertexBuffers.forEach(((renderType, vertexBuffer) -> {
             vertexBuffer.close();//Should only be called from "renderThread"
         }));
+    }
+
+    public void clearMirageBuffers() {
+        this.mirageBuffers.forEach((renderType, mirageBufferBuilder) -> {
+            mirageBufferBuilder.clear();
+        });
+        this.mirageBuffers.clear();
     }
 
     public MirageImmediate getMirageImmediate(){
