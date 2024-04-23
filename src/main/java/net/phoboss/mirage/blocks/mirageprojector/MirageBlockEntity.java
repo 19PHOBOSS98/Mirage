@@ -271,28 +271,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
     }
 
 
-    public static CompoundTag getBuildingNbt(String structureName) throws Exception{
-        File nbtFile = getBuildingNbtFile(structureName);
-        try {
-            return NbtIo.readCompressed(nbtFile);
-        }
-        catch (Exception e) {
-            throw new Exception("Couldn't read nbt file: "+nbtFile,e);
-        }
-    }
-    public static File getBuildingNbtFile(String structureName) throws Exception{
-        File nbtFile = null;
-        try {
-            nbtFile = Mirage.SCHEMATICS_FOLDER.resolve(structureName+".nbt").toFile();
-            if(nbtFile.exists()){
-                return nbtFile;
-            }
-        }
-        catch (Exception e) {
-            throw new Exception("Couldn't open file: \n"+nbtFile.getName(),e);
-        }
-        throw new Exception("Couldn't find: "+nbtFile.getName()+"\nin schematics folder: "+Mirage.SCHEMATICS_FOLDER.getFileName());
-    }
+
     public void startMirage() throws Exception{
         validateNBTFiles(getFileNames());
         setChanged();//load schematic to mirageWorld in "readNBT(...)"
@@ -304,13 +283,12 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                 if(fileName.isEmpty()){
                     throw new Exception("Blank File Name");
                 }
-                getBuildingNbtFile(fileName);
+                MirageStructure.getBuildingNbtFile(fileName);
             }
         }catch (Exception e){
             throw new Exception(e.getMessage(),e);
         }
     }
-
 
     public ConcurrentHashMap<Integer, MirageWorld> getMirageWorlds() {
         return this.mirageWorlds;

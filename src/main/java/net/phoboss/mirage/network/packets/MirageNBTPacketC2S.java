@@ -85,7 +85,7 @@ public class MirageNBTPacketC2S {
 
                     Mirage.SERVER_THREAD_POOL.submit(() -> {
                         try{
-                            CompoundTag structureNBT = MirageBlockEntity.getBuildingNbt(fileName);
+                            CompoundTag structureNBT = MirageStructure.getBuildingNbt(fileName);
 
                             List<CompoundTag> splitStructureNBTList = MirageStructure.splitStructureNBT(structureNBT);
                             int totalFragments = splitStructureNBTList.size();
