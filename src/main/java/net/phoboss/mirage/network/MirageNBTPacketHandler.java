@@ -13,10 +13,10 @@ public class MirageNBTPacketHandler {
     public static final Identifier MIRAGE_NBT_CHANNEL = new Identifier(Mirage.MOD_ID, "mirage_nbt_channel");
     public static void registerC2SPackets() {
         ServerPlayNetworking.registerGlobalReceiver(MIRAGE_NBT_CHANNEL,MirageNBTPacketC2S::receive);
-        ClientPlayNetworking.registerGlobalReceiver(MIRAGE_NBT_CHANNEL,MirageNBTPacketS2C::receive);
+
     }
     public static void registerS2CPackets() {
-
+        ClientPlayNetworking.registerGlobalReceiver(MIRAGE_NBT_CHANNEL,MirageNBTPacketS2C::receive);
     }
 
     public static void sendToServer(PacketByteBuf message){
