@@ -83,7 +83,7 @@ public class MirageNBTPacketC2S {
                     return saved structureNBT (not actually "save" strcutreNBTs as NBTFiles just let it run in the server's memory)
                     */
 
-                    Mirage.SERVER_THREAD_POOL.submit(() -> {
+                    Mirage.SERVER_THREAD_POOL.execute(() -> {
                         try{
                             CompoundTag structureNBT = MirageStructure.getBuildingNbt(fileName);
 
@@ -98,7 +98,8 @@ public class MirageNBTPacketC2S {
                                 MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(mirageBlockEntityPos, mirageWorldIdx, fragmentIdx, totalFragments, false, splitStructureNBT),player);
                             }
 
-                            player.displayClientMessage(new TextComponent("loading: "+fileName+" totalFragments:"+totalFragments), false);
+
+                            Mirage.LOGGER.info("Mirage File: "+fileName+" totalFragments:"+totalFragments+" MirageProjector: "+mirageBlockEntityPos + " For Client: "+player.getName());
                         }catch (Exception e){
                             Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
                         }

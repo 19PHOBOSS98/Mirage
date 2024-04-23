@@ -453,6 +453,9 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         synchronized (this.mirageBufferStorage.mirageImmediate){
             this.mirageBufferStorage.resetMirageImmediateBuffers();
         }
+        synchronized (this.mirageBufferStorage){
+            this.mirageBufferStorage.clearMirageBuffers();
+        }
         synchronized (this.mirageStateNEntities){
             clearMirageStateNEntities();
         }

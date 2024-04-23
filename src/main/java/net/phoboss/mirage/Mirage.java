@@ -33,8 +33,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Mirage.MOD_ID)
@@ -94,16 +93,33 @@ public class Mirage
         public static void onWorldLoad(WorldEvent.Load event){
             if(event.getWorld().isClientSide()) {
                 System.gc();
-                CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                /*CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
                         .namingPattern("ClientMirageLoader-%d")
                         .priority(Thread.MAX_PRIORITY)
-                        .build());
+                        .build());*/
+                ThreadPoolExecutor tpe = new ThreadPoolExecutor(2,2,60L,TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<Runnable>(),
+                        new BasicThreadFactory.Builder()
+                                .namingPattern("ServerMirageLoader-%d")
+                                .priority(Thread.MAX_PRIORITY)
+                                .build());
+                tpe.allowCoreThreadTimeOut(true);
+                CLIENT_THREAD_POOL = tpe;
             }else{
                 System.gc();
-                SERVER_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                /*SERVER_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
                         .namingPattern("ServerMirageLoader-%d")
                         .priority(Thread.MAX_PRIORITY)
-                        .build());
+                        .build());*/
+                ThreadPoolExecutor tpe = new ThreadPoolExecutor(2,2,60L,TimeUnit.SECONDS,
+                                                            new LinkedBlockingQueue<Runnable>(),
+                                                            new BasicThreadFactory.Builder()
+                                                                .namingPattern("ServerMirageLoader-%d")
+                                                                .priority(Thread.MAX_PRIORITY)
+                                                                .build());
+                tpe.allowCoreThreadTimeOut(true);
+                SERVER_THREAD_POOL = tpe;
+
             }
         }
         @SubscribeEvent

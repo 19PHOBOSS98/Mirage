@@ -123,24 +123,25 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
     }
 
     public void requestForMirageFilesFromServer(){
-        resetMirageWorlds(getFileNames().size());
+
         Runnable myThread = () ->
         {
             try {
+                Thread.currentThread().setName("requestMirageThread");
+
                 int mirageCount = getFileNames().size();
-                Thread.currentThread().setName("myThread");
+                resetMirageWorlds(mirageCount);
+                for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
+                    this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level));
+                }
                 for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
                     //freeMirageWorldMemory(mirageCount);
-                    this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level));
                     MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
                             getBlockPos(),
                             getFileNames().get(mirageWorldIndex),
                             mirageWorldIndex,
                             new ArrayList<>()));
                 }
-            }catch (OutOfMemoryError e){
-                requestForMirageFilesFromServer();
-                Mirage.LOGGER.error("Out Of Memory",e);
             }catch (Exception e){
                 Mirage.LOGGER.error("Exception on requestForMirageFilesFromServer",e);
             }
