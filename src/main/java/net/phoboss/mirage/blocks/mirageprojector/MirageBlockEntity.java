@@ -150,19 +150,19 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         if(this.recursionLevel>Mirage.CONFIGS.get("mirageRecursionLimit").getAsInt()){
             return;
         }
-        int mirageCount = getFileNames().size();
-        synchronized (this.mirageWorlds) {
-            resetMirageWorlds(mirageCount);
-            for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
-                this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level, this, mirageWorldIndex));
-            }
-        }
+
         Runnable myThread = () ->
         {
             try {
                 Thread.currentThread().setName("requestMirageThread");
 
-
+                int mirageCount = getFileNames().size();
+                synchronized (this.mirageWorlds) {
+                    resetMirageWorlds(mirageCount);
+                    for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
+                        this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level, this, mirageWorldIndex));
+                    }
+                }
 
                 for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
                     //freeMirageWorldMemory(mirageCount);
