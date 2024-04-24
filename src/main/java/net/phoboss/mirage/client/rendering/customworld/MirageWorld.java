@@ -69,6 +69,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.ModList;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import net.phoboss.mirage.Mirage;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -79,9 +80,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 public class MirageWorld extends Level implements ServerLevelAccessor {
-    public MirageWorld(Level level) {
-        super(
-                (WritableLevelData) level.getLevelData(),
+    public MirageWorld(Level level, MirageBlockEntity mirageBlockEntity, int mirageWorldIndex) {
+        super((WritableLevelData) level.getLevelData(),
                 level.dimension(),
                 level.registryAccess(),
                 level.dimensionTypeRegistration(),
@@ -103,7 +103,12 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         setChunkManager(new MirageChunkManager(this));
 
         this.mirageBufferStorage = new MirageBufferStorage();
+
+        this.parentMirageBlockEntity = mirageBlockEntity;
+        this.mirageWorldIndex = mirageWorldIndex;
     }
+
+
     public static Minecraft mc = Minecraft.getInstance();
     public static BlockRenderDispatcher blockRenderManager = mc.getBlockRenderer();
     public static BlockEntityRenderDispatcher blockEntityRenderDispatcher = mc.getBlockEntityRenderDispatcher();
@@ -450,12 +455,23 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public void clearMirageStateNEntities(){
+        this.mirageStateNEntities.forEach((key,stateNEntity)->{
+            if(stateNEntity.blockEntity instanceof MirageBlockEntity mbe){
+                synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+                    Mirage.removeFromBlockEntityPhoneBook(mbe);
+                }
+                mbe.resetMirageWorlds();
+            }
+        });
         this.mirageStateNEntities.clear();
     }
 
     public void clearMirageWorld(){
         synchronized (this.mirageBufferStorage.mirageImmediate){
             this.mirageBufferStorage.resetMirageImmediateBuffers();
+        }
+        synchronized (this.mirageBufferStorage){
+            this.mirageBufferStorage.clearMirageBuffers();
         }
         synchronized (this.mirageStateNEntities){
             clearMirageStateNEntities();
@@ -543,6 +559,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             }
             if(blockEntity != null) {
                 setHasBlockEntities(true);
+
                 if (blockEntityRenderDispatcher.getRenderer(blockEntity)!=null) {
 
                         this.bERBlocksList.put(blockPosKey, new BlockWEntity(blockState, blockEntity));
@@ -681,8 +698,18 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         entity.getSelfAndPassengers().forEach(this::addFreshEntity);
     }
 
+    public MirageBlockEntity parentMirageBlockEntity;
+    public int mirageWorldIndex;
+    public MirageBlockEntity getParentMirageBlockEntity() {
+        return parentMirageBlockEntity;
+    }
+
+
     @Override
     public void setBlockEntity(BlockEntity blockEntity) {
+        if(blockEntity instanceof MirageBlockEntity mbe){
+            mbe.setRecursionLevel(getParentMirageBlockEntity().getRecursionLevel()+1);
+        }
         BlockPos pos = blockEntity.getBlockPos();
         blockEntity.setLevel(this);//needs to be done AFTER setBlockState(...) here to properly initialize FramedBlockEntity ModelData
         setMirageBlockEntity(pos,blockEntity);
@@ -815,9 +842,9 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         BlockState blockstate = blockEntity.getBlockState();
         BlockEntityTicker blockEntityTicker = blockstate.getTicker(this, blockEntity.getType());
         if (blockEntityTicker != null) {
-
+            synchronized (this.mirageBlockEntityTickers) {
                 this.mirageBlockEntityTickers.add(new BlockTicker(pos, blockstate, blockEntity, blockEntityTicker));
-
+            }
         }
     }
 

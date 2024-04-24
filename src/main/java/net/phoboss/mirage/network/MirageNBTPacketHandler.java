@@ -34,8 +34,6 @@ public class MirageNBTPacketHandler {
                 .clientAcceptedVersions(version -> true)
                 .simpleChannel();
 
-
-
         net.messageBuilder(MirageNBTPacketC2S.class,id(), NetworkDirection.PLAY_TO_SERVER)
                 .decoder(MirageNBTPacketC2S::new)
                 .encoder(MirageNBTPacketC2S::toBytes)

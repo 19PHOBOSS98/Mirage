@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class MirageNBTPacketC2S {
-    BlockPos mirageBlockPosition;
+
+    int phoneBookIdx;
+
     String fileName;
 
     int mirageWorldIndex;
@@ -31,21 +33,21 @@ public class MirageNBTPacketC2S {
     List<Integer> mirageFragmentCheckList;
     public MirageNBTPacketC2S() {
     }
-    public MirageNBTPacketC2S(BlockPos pos, String file, int mirageWorldIndex, List<Integer> mirageFragmentCheckList) {
-        this.mirageBlockPosition = pos;
+    public MirageNBTPacketC2S(int phoneBookIdx, String file, int mirageWorldIndex, List<Integer> mirageFragmentCheckList) {
+        this.phoneBookIdx = phoneBookIdx;
         this.fileName = file;
         this.mirageWorldIndex = mirageWorldIndex;
         this.mirageFragmentCheckList = mirageFragmentCheckList;
     }
     public MirageNBTPacketC2S(FriendlyByteBuf buf) {
-        this.mirageBlockPosition = buf.readBlockPos();
+        this.phoneBookIdx = buf.readInt();
         this.fileName = buf.readUtf();
         this.mirageWorldIndex = buf.readInt();
         this.mirageFragmentCheckList = buf.readCollection(c -> new ArrayList<>(), FriendlyByteBuf::readInt);
     }
 
     public void toBytes(FriendlyByteBuf buf) {
-        buf.writeBlockPos(this.mirageBlockPosition);
+        buf.writeInt(this.phoneBookIdx);
         buf.writeUtf(this.fileName);
         buf.writeInt(this.mirageWorldIndex);
         buf.writeCollection(this.mirageFragmentCheckList, FriendlyByteBuf::writeInt);
@@ -61,30 +63,26 @@ public class MirageNBTPacketC2S {
             context.enqueueWork(() -> {
                 ServerPlayer player = context.getSender();
                 Level level = player.level();
+
                 if(!player.connection.connection.isConnected()){
                     return;
                 }
 
-                BlockPos mirageBlockEntityPos = msg.mirageBlockPosition;
+                int phoneBookIdx = msg.phoneBookIdx;
                 String fileName = msg.fileName;
                 int mirageWorldIdx = msg.mirageWorldIndex;
                 List<Integer> checkList = msg.mirageFragmentCheckList;
 
                 try {
-                    BlockEntity be = level.getBlockEntity(mirageBlockEntityPos);
-                    if(be == null || be.isRemoved()){
-                        player.displayClientMessage(Component.literal("Mirage Projector Not Found"), false);
-                        throw new Exception("Mirage Projector Not Found");
-                    }
 
                     /*
                     MirageBlockEntity mirageBlockEntity = (MirageBlockEntity) be;
                     return saved structureNBT (not actually "save" strcutreNBTs as NBTFiles just let it run in the server's memory)
                     */
 
-                    Mirage.SERVER_THREAD_POOL.submit(() -> {
+                    Mirage.SERVER_THREAD_POOL.execute(() -> {
                         try{
-                            CompoundTag structureNBT = MirageBlockEntity.getBuildingNbt(fileName);
+                            CompoundTag structureNBT = MirageStructure.getBuildingNbt(fileName);
 
                             List<CompoundTag> splitStructureNBTList = MirageStructure.splitStructureNBT(structureNBT);
                             int totalFragments = splitStructureNBTList.size();
@@ -94,10 +92,11 @@ public class MirageNBTPacketC2S {
                                 }
                                 CompoundTag splitStructureNBT = splitStructureNBTList.get(fragmentIdx);
 
-                                MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(mirageBlockEntityPos, mirageWorldIdx, fragmentIdx, totalFragments, false, splitStructureNBT),player);
+                                MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(phoneBookIdx, mirageWorldIdx, fragmentIdx, totalFragments, false, splitStructureNBT),player);
                             }
 
-                            player.displayClientMessage(Component.literal("loading: "+fileName + " total Fragments: "+totalFragments), false);
+
+                            Mirage.LOGGER.info("Mirage File: "+fileName+" totalFragments:"+totalFragments + " For Client: "+player.getName());
                         }catch (Exception e){
                             Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
                         }

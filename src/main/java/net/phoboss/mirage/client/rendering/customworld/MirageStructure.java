@@ -20,8 +20,10 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.Vec3;
+import net.phoboss.mirage.Mirage;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.*;
 
 public class MirageStructure extends StructureTemplate {
@@ -227,6 +229,29 @@ public class MirageStructure extends StructureTemplate {
         });*/
     }
 
+    public static CompoundTag getBuildingNbt(String structureName) throws Exception{
+        File nbtFile = getBuildingNbtFile(structureName);
+        try {
+            return NbtIo.readCompressed(nbtFile);
+        }
+        catch (Exception e) {
+            throw new Exception("Couldn't read nbt file: "+nbtFile,e);
+        }
+    }
+    public static File getBuildingNbtFile(String structureName) throws Exception{
+        File nbtFile = null;
+        try {
+            nbtFile = Mirage.SCHEMATICS_FOLDER.resolve(structureName+".nbt").toFile();
+            if(nbtFile.exists()){
+                return nbtFile;
+            }
+        }
+        catch (Exception e) {
+            throw new Exception("Couldn't open file: \n"+nbtFile.getName(),e);
+        }
+        throw new Exception("Couldn't find: "+nbtFile.getName()+"\nin schematics folder: "+Mirage.SCHEMATICS_FOLDER.getFileName());
+    }
+
     public static CompoundTag getFragmentStructureNBTTemplate(ListTag size,int dataVersion){
         CompoundTag fragmentStructureNBT = new CompoundTag();
         fragmentStructureNBT.put("size", size);
@@ -275,57 +300,62 @@ public class MirageStructure extends StructureTemplate {
             block.putInt("state",0);
             sortedPaletteBlockList.get(blockState).add(block);
         }
+        try {
+            for (int paletteIdx = 0; paletteIdx < paletteNBT.size(); ++paletteIdx) {
+                fragmentStructureNBT = getFragmentStructureNBTTemplate(size, dataVersion);
+                fragmentEntities = new ListTag();
+                fragmentBlocks = new ListTag();
 
-        for(int paletteIdx = 0; paletteIdx < paletteNBT.size(); ++paletteIdx) {
-            fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
-            fragmentEntities = new ListTag();
-            fragmentBlocks = new ListTag();
+                CompoundTag p = paletteNBT.getCompound(paletteIdx);
+                if (p.getString("Name").equals("minecraft:air")) {
+                    continue;
+                }
+                fragmentPalette = new ListTag();
+                fragmentPalette.add(p);
 
-            CompoundTag p = paletteNBT.getCompound(paletteIdx);
-            if(p.getString("Name").equals("minecraft:air")){
-                continue;
+                List<CompoundTag> blockList = sortedPaletteBlockList.get(paletteIdx);
+                for (CompoundTag block : blockList) {
+
+                    fragmentBlocks.add(block);
+                    fragmentStructureNBT.put("blocks", fragmentBlocks);
+                    fragmentStructureNBT.put("palette", fragmentPalette);
+                    int byteSize = fragmentStructureNBT.sizeInBytes();
+                    if (byteSize >= 262144) {
+                        fragmentStructureNBT.put("entities", fragmentEntities);
+                        splitStructureNBTList.add(fragmentStructureNBT.copy());
+
+                        fragmentStructureNBT = getFragmentStructureNBTTemplate(size, dataVersion);
+                        fragmentEntities = new ListTag();
+                        fragmentBlocks = new ListTag();
+                    }
+                }
+                splitStructureNBTList.add(fragmentStructureNBT.copy());
             }
-            fragmentPalette = new ListTag();
-            fragmentPalette.add(p);
 
-            List<CompoundTag> blockList = sortedPaletteBlockList.get(paletteIdx);
-            for (CompoundTag block : blockList) {
+            if(entitiesNBT.isEmpty()){
+                return splitStructureNBTList;
+            }
 
-                fragmentBlocks.add(block);
-                fragmentStructureNBT.put("blocks", fragmentBlocks);
-                fragmentStructureNBT.put("palette", fragmentPalette);
-                if (fragmentStructureNBT.sizeInBytes() >= 262144){
-                    fragmentStructureNBT.put("entities", fragmentEntities);
+            for (int i = 0; i < entitiesNBT.size(); ++i) {
+                CompoundTag entity = entitiesNBT.getCompound(i);
+                fragmentEntities.add(entity);
+
+                fragmentStructureNBT.put("entities", fragmentEntities);
+                int byteSize = fragmentStructureNBT.sizeInBytes();
+                if (byteSize >= 262144) {
+                    fragmentStructureNBT.put("blocks", fragmentBlocks);
+                    fragmentStructureNBT.put("palette", fragmentPalette);
                     splitStructureNBTList.add(fragmentStructureNBT.copy());
 
-                    fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
+                    fragmentStructureNBT = getFragmentStructureNBTTemplate(size, dataVersion);
                     fragmentEntities = new ListTag();
                     fragmentBlocks = new ListTag();
                 }
             }
             splitStructureNBTList.add(fragmentStructureNBT.copy());
+        }catch (Exception e){
+            Mirage.LOGGER.error("Error while fragmenting NBT",e);
         }
-
-        for(int i = 0; i < entitiesNBT.size(); ++i) {
-            CompoundTag entity = entitiesNBT.getCompound(i);
-            fragmentEntities.add(entity);
-
-            fragmentStructureNBT.put("entities", fragmentEntities);
-
-            if (fragmentStructureNBT.sizeInBytes() >= 262144){
-                fragmentStructureNBT.put("blocks", fragmentBlocks);
-                fragmentStructureNBT.put("palette", fragmentPalette);
-                splitStructureNBTList.add(fragmentStructureNBT.copy());
-
-                fragmentStructureNBT = getFragmentStructureNBTTemplate(size,dataVersion);
-                fragmentEntities = new ListTag();
-                fragmentBlocks = new ListTag();
-            }
-        }
-
-
-
-        splitStructureNBTList.add(fragmentStructureNBT.copy());
 
         return splitStructureNBTList;
     }

@@ -37,13 +37,22 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IForgeBlockEntity {
+
     public MirageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MIRAGE_BLOCK.get(), pos, state);
         setBookSettingsPOJO(new MirageProjectorBook());
+    }
+
+    public void unregisterFromPhoneBook() {
+        synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+            Mirage.removeFromBlockEntityPhoneBook(this);
+        }
     }
 
     public void setActiveLow(boolean activeLow) {
@@ -84,14 +93,15 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
             System.gc();
         }
     }
-    private ConcurrentHashMap<Integer, MirageWorld> mirageWorlds;
+
+    private ConcurrentHashMap<Integer, MirageWorld> mirageWorlds = new ConcurrentHashMap<>();
 
     public void resetMirageWorlds() {
-        if(mirageWorlds != null){
-            mirageWorlds.forEach((integer, mirageWorld) -> {
+        if(this.mirageWorlds != null){
+            this.mirageWorlds.forEach((integer, mirageWorld) -> {
                 mirageWorld.clearMirageWorld();
             });
-            mirageWorlds.clear();
+            this.mirageWorlds.clear();
         }
     }
     public void resetMirageWorlds(int count){
@@ -113,25 +123,50 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         }
     }
 
+    private int phoneBookIndex;
+    public void setPhoneBookIndex(int phoneBookIdx) {
+        this.phoneBookIndex = phoneBookIdx;
+    }
+    public int getPhoneBookIndex() {
+        return this.phoneBookIndex;
+    }
+
+    int recursionLevel = 0;
+
+    public int getRecursionLevel() {
+        return recursionLevel;
+    }
+
+    public void setRecursionLevel(int recursionLevel) {
+        this.recursionLevel = recursionLevel;
+    }
+
     public void requestForMirageFilesFromServer(){
-        resetMirageWorlds(getFileNames().size());
+        if(this.recursionLevel>Mirage.CONFIGS.get("mirageRecursionLimit").getAsInt()){
+            return;
+        }
+
         Runnable myThread = () ->
         {
             try {
+                Thread.currentThread().setName("requestMirageThread");
+
                 int mirageCount = getFileNames().size();
-                Thread.currentThread().setName("myThread");
+                synchronized (this.mirageWorlds) {
+                    resetMirageWorlds(mirageCount);
+                    for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
+                        this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level, this, mirageWorldIndex));
+                    }
+                }
+
                 for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
                     //freeMirageWorldMemory(mirageCount);
-                    this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level));
                     MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
-                            getBlockPos(),
+                            getPhoneBookIndex(),
                             getFileNames().get(mirageWorldIndex),
                             mirageWorldIndex,
                             new ArrayList<>()));
                 }
-            }catch (OutOfMemoryError e){
-                requestForMirageFilesFromServer();
-                Mirage.LOGGER.error("Out Of Memory",e);
             }catch (Exception e){
                 Mirage.LOGGER.error("Exception on requestForMirageFilesFromServer",e);
             }
@@ -214,7 +249,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
                 }
                 if(fragmentIdx == totalFragments-1){
                     MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
-                            getBlockPos(),
+                            getPhoneBookIndex(),
                             getFileNames().get(mirageWorldIndex),
                             mirageWorldIndex,
                             mirageWorld.getMirageFragmentCheckList()));
@@ -253,51 +288,18 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         //mirageWorld.clearMirageWorld();
         mirageWorld.setHasBlockEntities(false);
         fakeStructure.placeInWorld(mirageWorld,pos,pos,StructurePlaceSettings,mirageWorld.random, Block.UPDATE_ALL);
-
-        //this.mirageWorld.initVertexBuffers(pos);      //the RenderDispatchers "camera" subojects are null on initialization causing errors
-
-
     }
 
     @Override
     public void setLevel(Level world) {
         super.setLevel(world);
-        this.mirageWorlds = new ConcurrentHashMap<>();
-    }
-
-
-    public static CompoundTag getBuildingNbt(String structureName) throws Exception{
-        File nbtFile = getBuildingNbtFile(structureName);
-        try {
-            return NbtIo.readCompressed(nbtFile);
-        }
-        catch (Exception e) {
-            throw new Exception("Couldn't read nbt file: "+nbtFile,e);
+        if(getLevel().isClientSide()) {
+            Mirage.addToBlockEntityPhoneBook(this);
         }
     }
 
-    public static CompoundTag getBuildingNbt(File nbtFile) throws Exception{
-        try {
-            return NbtIo.readCompressed(nbtFile);
-        }
-        catch (Exception e) {
-            throw new Exception("Couldn't read nbt file: "+nbtFile,e);
-        }
-    }
 
-    public static File getBuildingNbtFile(String structureName) throws Exception{
-        File nbtFile = null;
-        try {
-            nbtFile = Mirage.SCHEMATICS_FOLDER.resolve(structureName+".nbt").toFile();
-            if(nbtFile.exists()){
-                return nbtFile;
-            }
-        }
-        catch (Exception e) {
-            throw new Exception("Couldn't open file: \n"+nbtFile.getName(),e);
-        }
-        throw new Exception("Couldn't find: "+nbtFile.getName()+"\nin schematics folder: "+Mirage.SCHEMATICS_FOLDER.getFileName());
-    }
+
     public void startMirage() throws Exception{
         validateNBTFiles(getFileNames());
         setChanged();//load schematic to mirageWorld in "readNBT(...)"
@@ -309,13 +311,12 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
                 if(fileName.isEmpty()){
                     throw new Exception("Blank File Name");
                 }
-                getBuildingNbtFile(fileName);
+                MirageStructure.getBuildingNbtFile(fileName);
             }
         }catch (Exception e){
             throw new Exception(e.getMessage(),e);
         }
     }
-
 
     public ConcurrentHashMap<Integer, MirageWorld> getMirageWorlds() {
         return this.mirageWorlds;
@@ -611,6 +612,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         }
         controller.setAnimation(RawAnimation.begin().then("idle", Animation.LoopType.LOOP));
         return PlayState.CONTINUE;
+
     }
 
     @Override
@@ -630,6 +632,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity, IF
         Vec3i offset = new Vec3i(512,512,512);
         return new AABB(pos.subtract(offset),pos.offset(offset));
     }
+
 
 
 }
