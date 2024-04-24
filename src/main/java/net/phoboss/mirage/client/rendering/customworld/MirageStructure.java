@@ -11,7 +11,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
@@ -21,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import net.phoboss.mirage.Mirage;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
 
@@ -224,6 +224,29 @@ public class MirageStructure extends StructureTemplate {
         });*/
     }
 
+    public static CompoundTag getBuildingNbt(String structureName) throws Exception{
+        File nbtFile = getBuildingNbtFile(structureName);
+        try {
+            return NbtIo.readCompressed(nbtFile);
+        }
+        catch (Exception e) {
+            throw new Exception("Couldn't read nbt file: "+nbtFile,e);
+        }
+    }
+    public static File getBuildingNbtFile(String structureName) throws Exception{
+        File nbtFile = null;
+        try {
+            nbtFile = Mirage.SCHEMATICS_FOLDER.resolve(structureName+".nbt").toFile();
+            if(nbtFile.exists()){
+                return nbtFile;
+            }
+        }
+        catch (Exception e) {
+            throw new Exception("Couldn't open file: \n"+nbtFile.getName(),e);
+        }
+        throw new Exception("Couldn't find: "+nbtFile.getName()+"\nin schematics folder: "+Mirage.SCHEMATICS_FOLDER.getFileName());
+    }
+
     public static CompoundTag getFragmentStructureNBTTemplate(ListTag size,int dataVersion){
         CompoundTag fragmentStructureNBT = new CompoundTag();
         fragmentStructureNBT.put("size", size);
@@ -304,6 +327,10 @@ public class MirageStructure extends StructureTemplate {
                 splitStructureNBTList.add(fragmentStructureNBT.copy());
             }
 
+            if(entitiesNBT.isEmpty()){
+                return splitStructureNBTList;
+            }
+
             for (int i = 0; i < entitiesNBT.size(); ++i) {
                 CompoundTag entity = entitiesNBT.getCompound(i);
                 fragmentEntities.add(entity);
@@ -320,13 +347,10 @@ public class MirageStructure extends StructureTemplate {
                     fragmentBlocks = new ListTag();
                 }
             }
+            splitStructureNBTList.add(fragmentStructureNBT.copy());
         }catch (Exception e){
             Mirage.LOGGER.error("Error while fragmenting NBT",e);
         }
-
-
-
-        splitStructureNBTList.add(fragmentStructureNBT.copy());
 
         return splitStructureNBTList;
     }

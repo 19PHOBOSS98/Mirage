@@ -20,6 +20,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import net.phoboss.mirage.client.rendering.ModRendering;
 import net.phoboss.mirage.items.ModItems;
 import net.phoboss.mirage.network.MirageNBTPacketHandler;
@@ -32,8 +33,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(Mirage.MOD_ID)
@@ -49,6 +51,8 @@ public class Mirage
     public static ExecutorService CLIENT_THREAD_POOL;
 
     public static ExecutorService SERVER_THREAD_POOL;
+
+    public static ConcurrentHashMap<Integer,MirageBlockEntity> CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK;
 
     public Mirage()
     {
@@ -84,28 +88,9 @@ public class Mirage
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event){
             ModRendering.registerAll();
+
         }
     }
-
-    /*@Mod.EventBusSubscriber(modid = Mirage.MOD_ID, value = Dist.CLIENT)
-    public class ClientModEvents {
-        @SubscribeEvent
-        public static void onWorldLoad(LevelEvent.Load event){
-            if(event.getLevel().isClientSide()) {
-                System.gc();
-                CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
-                        .namingPattern("ClientMirageLoader-%d")
-                        .priority(Thread.MAX_PRIORITY)
-                        .build());
-            }
-        }
-        @SubscribeEvent
-        public static void onWorldUnload(LevelEvent.Unload event){
-            if(event.getLevel().isClientSide()) {
-                CLIENT_THREAD_POOL.shutdownNow();
-            }
-        }
-    }*/
 
     @Mod.EventBusSubscriber(modid = Mirage.MOD_ID)
     public class CommonModEvents {
@@ -113,16 +98,35 @@ public class Mirage
         public static void onWorldLoad(LevelEvent.Load event){
             if(event.getLevel().isClientSide()) {
                 System.gc();
-                CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                /*CLIENT_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
                         .namingPattern("ClientMirageLoader-%d")
                         .priority(Thread.MAX_PRIORITY)
-                        .build());
+                        .build());*/
+                ThreadPoolExecutor tpe = new ThreadPoolExecutor(2,2,60L,TimeUnit.SECONDS,
+                        new LinkedBlockingQueue<Runnable>(),
+                        new BasicThreadFactory.Builder()
+                                .namingPattern("ServerMirageLoader-%d")
+                                .priority(Thread.MAX_PRIORITY)
+                                .build());
+                tpe.allowCoreThreadTimeOut(true);
+                CLIENT_THREAD_POOL = tpe;
+
+                CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK = new ConcurrentHashMap<>();
             }else{
                 System.gc();
-                SERVER_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
+                /*SERVER_THREAD_POOL = Executors.newFixedThreadPool(2,new BasicThreadFactory.Builder()
                         .namingPattern("ServerMirageLoader-%d")
                         .priority(Thread.MAX_PRIORITY)
-                        .build());
+                        .build());*/
+                ThreadPoolExecutor tpe = new ThreadPoolExecutor(2,2,60L,TimeUnit.SECONDS,
+                                                            new LinkedBlockingQueue<Runnable>(),
+                                                            new BasicThreadFactory.Builder()
+                                                                .namingPattern("ServerMirageLoader-%d")
+                                                                .priority(Thread.MAX_PRIORITY)
+                                                                .build());
+                tpe.allowCoreThreadTimeOut(true);
+                SERVER_THREAD_POOL = tpe;
+
             }
         }
         @SubscribeEvent
@@ -130,6 +134,7 @@ public class Mirage
             if(event.getLevel().isClientSide()) {
                 System.gc();
                 CLIENT_THREAD_POOL.shutdownNow();
+                CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.clear();
             }else{
                 System.gc();
                 SERVER_THREAD_POOL.shutdownNow();
@@ -158,7 +163,7 @@ public class Mirage
         }
         JsonObject mirageConfig = new JsonObject();
         mirageConfig.addProperty("schematicsDirectoryName", "schematics");
-        mirageConfig.addProperty("enableRecursiveMirage", false);
+        mirageConfig.addProperty("mirageRecursionLimit", 10);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (JsonWriter writer = new JsonWriter(new FileWriter(CONFIG_FILE.toFile()))) {
             gson.toJson(mirageConfig, mirageConfig.getClass(), writer);
@@ -175,5 +180,39 @@ public class Mirage
         }catch(Exception e){
             LOGGER.error(e.getMessage(),e);
         }
+    }
+
+    private static int PHONE_BOOK_INDEX = 0;
+    private static int getNewPhoneBookIndex(){
+        return PHONE_BOOK_INDEX++;
+    }
+
+    public static void addToBlockEntityPhoneBook(MirageBlockEntity mirageBlockEntity){
+        synchronized (CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+            if (!CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.values().contains(mirageBlockEntity)) {
+                int newPhoneBookIndex = getNewPhoneBookIndex();
+                CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.put(newPhoneBookIndex, mirageBlockEntity);
+                mirageBlockEntity.setPhoneBookIndex(newPhoneBookIndex);
+            }
+        }
+    }
+
+    public static void removeFromBlockEntityPhoneBook(MirageBlockEntity mirageBlockEntity){
+        CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.remove(mirageBlockEntity.getPhoneBookIndex());
+    }
+    public static void removeFromBlockEntityPhoneBook(int idx){
+        CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.remove(idx);
+    }
+
+    public static ConcurrentHashMap<Integer,MirageBlockEntity> getBlockEntityPhoneBook(){
+        return CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK;
+    }
+
+    public static MirageBlockEntity getBlockEntityPhoneBook(int idx){
+        return CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.get(idx);
+    }
+
+    public static int getBlockEntityPhoneBookSize(){
+        return CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.size();
     }
 }
