@@ -34,9 +34,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         if(!blockEntity.isPowered()) {
             return;
         }
-        if(!Mirage.CONFIGS.get("enableRecursiveMirage").getAsBoolean() && blockEntity.getLevel() instanceof MirageWorld){
-            return;//recursive mirages are unsafe
-        }
+
         ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
         int mirageWorldIndex = blockEntity.getMirageWorldIndex();
         if(!mirageWorldList.containsKey(mirageWorldIndex)){

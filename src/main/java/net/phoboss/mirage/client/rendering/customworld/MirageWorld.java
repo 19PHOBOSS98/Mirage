@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.math.Matrix4f;
 import com.simibubi.create.content.decoration.copycat.CopycatBlockEntity;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import me.jellysquid.mods.sodium.client.render.texture.SpriteUtil;
 import net.irisshaders.iris.api.v0.IrisApi;
@@ -50,7 +49,6 @@ import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.entity.LevelEntityGetter;
@@ -82,7 +80,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 public class MirageWorld extends Level implements ServerLevelAccessor {
-    public MirageWorld(Level level) {
+    public MirageWorld(Level level, MirageBlockEntity mirageBlockEntity, int mirageWorldIndex) {
         super((WritableLevelData) level.getLevelData(),
                 level.dimension(),
                 level.dimensionTypeRegistration(),
@@ -102,7 +100,12 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         setChunkManager(new MirageChunkManager(this));
 
         this.mirageBufferStorage = new MirageBufferStorage();
+
+        this.parentMirageBlockEntity = mirageBlockEntity;
+        this.mirageWorldIndex = mirageWorldIndex;
     }
+
+
     public static Minecraft mc = Minecraft.getInstance();
     public static BlockRenderDispatcher blockRenderManager = mc.getBlockRenderer();
     public static BlockEntityRenderDispatcher blockEntityRenderDispatcher = mc.getBlockEntityRenderDispatcher();
@@ -446,6 +449,14 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
     }
 
     public void clearMirageStateNEntities(){
+        this.mirageStateNEntities.forEach((key,stateNEntity)->{
+            if(stateNEntity.blockEntity instanceof MirageBlockEntity mbe){
+                synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+                    Mirage.removeFromBlockEntityPhoneBook(mbe);
+                }
+                mbe.resetMirageWorlds();
+            }
+        });
         this.mirageStateNEntities.clear();
     }
 
@@ -542,6 +553,7 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
             }
             if(blockEntity != null) {
                 setHasBlockEntities(true);
+
                 if (blockEntityRenderDispatcher.getRenderer(blockEntity)!=null) {
 
                         this.bERBlocksList.put(blockPosKey, new BlockWEntity(blockState, blockEntity));
@@ -682,8 +694,18 @@ public class MirageWorld extends Level implements ServerLevelAccessor {
         entity.getSelfAndPassengers().forEach(this::addFreshEntity);
     }
 
+    public MirageBlockEntity parentMirageBlockEntity;
+    public int mirageWorldIndex;
+    public MirageBlockEntity getParentMirageBlockEntity() {
+        return parentMirageBlockEntity;
+    }
+
+
     @Override
     public void setBlockEntity(BlockEntity blockEntity) {
+        if(blockEntity instanceof MirageBlockEntity mbe){
+            mbe.setRecursionLevel(getParentMirageBlockEntity().getRecursionLevel()+1);
+        }
         BlockPos pos = blockEntity.getBlockPos();
         blockEntity.setLevel(this);//needs to be done AFTER setBlockState(...) here to properly initialize FramedBlockEntity ModelData
         setMirageBlockEntity(pos,blockEntity);

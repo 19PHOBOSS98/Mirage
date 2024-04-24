@@ -1,19 +1,19 @@
 package net.phoboss.mirage.blocks.mirageprojector;
 
 import com.google.gson.Gson;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
@@ -27,6 +27,7 @@ import net.phoboss.mirage.client.rendering.customworld.StructureStates;
 import net.phoboss.mirage.network.MirageNBTPacketHandler;
 import net.phoboss.mirage.network.packets.MirageNBTPacketC2S;
 import net.phoboss.mirage.utility.RedstoneStateChecker;
+import org.checkerframework.checker.units.qual.C;
 import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib3.core.AnimationState;
 import software.bernie.geckolib3.core.IAnimatable;
@@ -39,19 +40,23 @@ import software.bernie.geckolib3.core.manager.AnimationData;
 import software.bernie.geckolib3.core.manager.AnimationFactory;
 import software.bernie.geckolib3.util.GeckoLibUtil;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
 public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForgeBlockEntity {
+
     public MirageBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MIRAGE_BLOCK.get(), pos, state);
         setBookSettingsPOJO(new MirageProjectorBook());
+    }
+
+    public void unregisterFromPhoneBook() {
+        synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+            Mirage.removeFromBlockEntityPhoneBook(this);
+        }
     }
 
     public void setActiveLow(boolean activeLow) {
@@ -92,14 +97,15 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
             System.gc();
         }
     }
-    private ConcurrentHashMap<Integer, MirageWorld> mirageWorlds;
+
+    private ConcurrentHashMap<Integer, MirageWorld> mirageWorlds = new ConcurrentHashMap<>();
 
     public void resetMirageWorlds() {
-        if(mirageWorlds != null){
-            mirageWorlds.forEach((integer, mirageWorld) -> {
+        if(this.mirageWorlds != null){
+            this.mirageWorlds.forEach((integer, mirageWorld) -> {
                 mirageWorld.clearMirageWorld();
             });
-            mirageWorlds.clear();
+            this.mirageWorlds.clear();
         }
     }
     public void resetMirageWorlds(int count){
@@ -122,22 +128,46 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         }
     }
 
-    public void requestForMirageFilesFromServer(){
+    private int phoneBookIndex;
+    public void setPhoneBookIndex(int phoneBookIdx) {
+        this.phoneBookIndex = phoneBookIdx;
+    }
+    public int getPhoneBookIndex() {
+        return this.phoneBookIndex;
+    }
 
+    int recursionLevel = 0;
+
+    public int getRecursionLevel() {
+        return recursionLevel;
+    }
+
+    public void setRecursionLevel(int recursionLevel) {
+        this.recursionLevel = recursionLevel;
+    }
+
+    public void requestForMirageFilesFromServer(){
+        if(this.recursionLevel>Mirage.CONFIGS.get("mirageRecursionLimit").getAsInt()){
+            return;
+        }
+        int mirageCount = getFileNames().size();
+        synchronized (this.mirageWorlds) {
+            resetMirageWorlds(mirageCount);
+            for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
+                this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level, this, mirageWorldIndex));
+            }
+        }
         Runnable myThread = () ->
         {
             try {
                 Thread.currentThread().setName("requestMirageThread");
 
-                int mirageCount = getFileNames().size();
-                resetMirageWorlds(mirageCount);
-                for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
-                    this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.level));
-                }
+
+
                 for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
                     //freeMirageWorldMemory(mirageCount);
                     MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
-                            getBlockPos(),
+                            getPhoneBookIndex(),
                             getFileNames().get(mirageWorldIndex),
                             mirageWorldIndex,
                             new ArrayList<>()));
@@ -224,7 +254,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
                 }
                 if(fragmentIdx == totalFragments-1){
                     MirageNBTPacketHandler.sendToServer(new MirageNBTPacketC2S(
-                            getBlockPos(),
+                            getPhoneBookIndex(),
                             getFileNames().get(mirageWorldIndex),
                             mirageWorldIndex,
                             mirageWorld.getMirageFragmentCheckList()));
@@ -268,7 +298,9 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
     @Override
     public void setLevel(Level world) {
         super.setLevel(world);
-        this.mirageWorlds = new ConcurrentHashMap<>();
+        if(getLevel().isClientSide()) {
+            Mirage.addToBlockEntityPhoneBook(this);
+        }
     }
 
 
@@ -600,6 +632,7 @@ public class MirageBlockEntity extends BlockEntity implements IAnimatable, IForg
         Vec3i offset = new Vec3i(512,512,512);
         return new AABB(pos.subtract(offset),pos.offset(offset));
     }
+
 
 
 }
