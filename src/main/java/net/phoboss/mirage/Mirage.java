@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.phoboss.mirage.blocks.ModBlockEntities;
 import net.phoboss.mirage.blocks.ModBlocks;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import net.phoboss.mirage.items.ModItems;
 import net.phoboss.mirage.network.MirageNBTPacketHandler;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -23,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -37,6 +39,8 @@ public class Mirage implements ModInitializer {
 
 	public static ExecutorService SERVER_THREAD_POOL;
 	public static ExecutorService CLIENT_THREAD_POOL;
+
+	public static ConcurrentHashMap<Integer, MirageBlockEntity> CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK;
 	@Override
 	public void onInitialize() {
 		GeckoLib.initialize();
@@ -85,7 +89,7 @@ public class Mirage implements ModInitializer {
 		}
 		JsonObject mirageConfig = new JsonObject();
 		mirageConfig.addProperty("schematicsDirectoryName", "schematics");
-		mirageConfig.addProperty("enableRecursiveMirage", false);
+		mirageConfig.addProperty("mirageRecursionLimit", 10);
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		try (JsonWriter writer = new JsonWriter(new FileWriter(CONFIG_FILE.toFile()))) {
 			gson.toJson(mirageConfig, mirageConfig.getClass(), writer);
@@ -102,5 +106,39 @@ public class Mirage implements ModInitializer {
 		}catch(Exception e){
 			LOGGER.error(e.getMessage(),e);
 		}
+	}
+
+	private static int PHONE_BOOK_INDEX = 0;
+	private static int getNewPhoneBookIndex(){
+		return PHONE_BOOK_INDEX++;
+	}
+
+	public static void addToBlockEntityPhoneBook(MirageBlockEntity mirageBlockEntity){
+		synchronized (CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+			if (!CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.values().contains(mirageBlockEntity)) {
+				int newPhoneBookIndex = getNewPhoneBookIndex();
+				CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.put(newPhoneBookIndex, mirageBlockEntity);
+				mirageBlockEntity.setPhoneBookIndex(newPhoneBookIndex);
+			}
+		}
+	}
+
+	public static void removeFromBlockEntityPhoneBook(MirageBlockEntity mirageBlockEntity){
+		CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.remove(mirageBlockEntity.getPhoneBookIndex());
+	}
+	public static void removeFromBlockEntityPhoneBook(int idx){
+		CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.remove(idx);
+	}
+
+	public static ConcurrentHashMap<Integer,MirageBlockEntity> getBlockEntityPhoneBook(){
+		return CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK;
+	}
+
+	public static MirageBlockEntity getBlockEntityPhoneBook(int idx){
+		return CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.get(idx);
+	}
+
+	public static int getBlockEntityPhoneBookSize(){
+		return CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.size();
 	}
 }

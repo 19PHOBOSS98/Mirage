@@ -8,6 +8,7 @@ import net.phoboss.mirage.client.rendering.ModRendering;
 import net.phoboss.mirage.network.MirageNBTPacketHandler;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 
 @Environment(EnvType.CLIENT)
@@ -21,8 +22,10 @@ public class MirageClient implements ClientModInitializer {
                     .namingPattern("ClientMirageLoader-%d")
                     .priority(Thread.MAX_PRIORITY)
                     .build());
+            Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK = new ConcurrentHashMap<>();
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK.clear();
             Mirage.CLIENT_THREAD_POOL.shutdownNow();
         });
 

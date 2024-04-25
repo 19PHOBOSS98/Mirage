@@ -55,6 +55,7 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import net.phoboss.mirage.Mirage;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -64,8 +65,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
+
 public class MirageWorld extends World implements ServerWorldAccess {
-    public MirageWorld(World world) {
+    public MirageWorld(World world, MirageBlockEntity mirageBlockEntity, int mirageWorldIndex) {
         super((MutableWorldProperties) world.getLevelProperties(),
                 world.getRegistryKey(),
                 world.getDimensionEntry(),
@@ -86,6 +88,9 @@ public class MirageWorld extends World implements ServerWorldAccess {
         setChunkManager(new MirageChunkManager(this));
 
         this.mirageBufferStorage = new MirageBufferStorage();
+
+        this.parentMirageBlockEntity = mirageBlockEntity;
+        this.mirageWorldIndex = mirageWorldIndex;
     }
     public static MinecraftClient mc = MinecraftClient.getInstance();
     public static BlockRenderManager blockRenderManager = mc.getBlockRenderManager();
@@ -426,6 +431,14 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public void clearMirageStateNEntities(){
+        this.mirageStateNEntities.forEach((key,stateNEntity)->{
+            if(stateNEntity.blockEntity instanceof MirageBlockEntity mbe){
+                synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+                    Mirage.removeFromBlockEntityPhoneBook(mbe);
+                }
+                mbe.resetMirageWorlds();
+            }
+        });
         this.mirageStateNEntities.clear();
     }
 
@@ -646,8 +659,18 @@ public class MirageWorld extends World implements ServerWorldAccess {
         entity.streamSelfAndPassengers().forEach(this::spawnEntity);
     }
 
+    public MirageBlockEntity parentMirageBlockEntity;
+    public int mirageWorldIndex;
+    public MirageBlockEntity getParentMirageBlockEntity() {
+        return parentMirageBlockEntity;
+    }
+
+
     @Override
     public void addBlockEntity(BlockEntity blockEntity) {
+        if(blockEntity instanceof MirageBlockEntity mbe){
+            mbe.setRecursionLevel(getParentMirageBlockEntity().getRecursionLevel()+1);
+        }
         BlockPos pos = blockEntity.getPos();
         blockEntity.setWorld(this);//needs to be done AFTER setBlockState(...) here to properly initialize FramedBlockEntity ModelData
         setMirageBlockEntity(pos,blockEntity);

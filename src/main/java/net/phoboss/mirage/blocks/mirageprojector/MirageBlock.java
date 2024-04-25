@@ -56,6 +56,7 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
             MirageBlockEntity blockEntity = (MirageBlockEntity) world.getBlockEntity(pos);
             blockEntity.stopMirageLoader();
             blockEntity.resetMirageWorlds();
+            blockEntity.unregisterFromPhoneBook();
         }
         //System.gc();
     }
@@ -71,6 +72,7 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
         super.onDestroyedByExplosion(world, pos, explosion);
         onBlockDestruction(world, pos);
     }
+
 
     @Override
     public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
@@ -101,6 +103,7 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
             }
         return ActionResult.PASS;
     }
+
 
     @Override
     public void customJSONParsingValidation(JsonObject settingsJSON,boolean override) throws Exception {
