@@ -1,6 +1,5 @@
 package net.phoboss.mirage.blocks.mirageprojector;
 
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -10,20 +9,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import net.phoboss.mirage.Mirage;
 import net.phoboss.mirage.client.rendering.customworld.MirageWorld;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoBlockRenderer;
 
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntity> {
+
     public MirageBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
         super(new MirageBlockModel());
     }
@@ -35,9 +32,7 @@ public class MirageBlockEntityRenderer extends GeoBlockRenderer<MirageBlockEntit
         if(!blockEntity.isPowered()) {
             return;
         }
-        if(!Mirage.CONFIGS.get("enableRecursiveMirage").getAsBoolean() && blockEntity.getWorld() instanceof MirageWorld){
-                return;//recursive mirages are unsafe
-        }
+
         ConcurrentHashMap<Integer,MirageWorld> mirageWorldList = blockEntity.getMirageWorlds();
         int mirageWorldIndex = blockEntity.getMirageWorldIndex();
         if(!mirageWorldList.containsKey(mirageWorldIndex)){

@@ -49,6 +49,12 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         setBookSettingsPOJO(new MirageProjectorBook());
     }
 
+    public void unregisterFromPhoneBook() {
+        synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+            Mirage.removeFromBlockEntityPhoneBook(this);
+        }
+    }
+
     public void setActiveLow(boolean activeLow) {
         getBookSettingsPOJO().setActiveLow(activeLow);
         markDirty();
@@ -87,14 +93,15 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
             System.gc();
         }
     }
-    private ConcurrentHashMap<Integer,MirageWorld> mirageWorlds;
+
+    private ConcurrentHashMap<Integer, MirageWorld> mirageWorlds = new ConcurrentHashMap<>();
 
     public void resetMirageWorlds() {
-        if(mirageWorlds != null){
-            mirageWorlds.forEach((integer, mirageWorld) -> {
+        if(this.mirageWorlds != null){
+            this.mirageWorlds.forEach((integer, mirageWorld) -> {
                 mirageWorld.clearMirageWorld();
             });
-            mirageWorlds.clear();
+            this.mirageWorlds.clear();
         }
     }
     public void resetMirageWorlds(int count){
@@ -116,7 +123,28 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
         }
     }
 
+    private int phoneBookIndex;
+    public void setPhoneBookIndex(int phoneBookIdx) {
+        this.phoneBookIndex = phoneBookIdx;
+    }
+    public int getPhoneBookIndex() {
+        return this.phoneBookIndex;
+    }
+
+    int recursionLevel = 0;
+
+    public int getRecursionLevel() {
+        return recursionLevel;
+    }
+
+    public void setRecursionLevel(int recursionLevel) {
+        this.recursionLevel = recursionLevel;
+    }
+
     public void requestForMirageFilesFromServer(){
+        if(this.recursionLevel>Mirage.CONFIGS.get("mirageRecursionLimit").getAsInt()){
+            return;
+        }
 
         Runnable myThread = () ->
         {
@@ -124,14 +152,17 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
                 Thread.currentThread().setName("requestMirageThread");
 
                 int mirageCount = getFileNames().size();
-                resetMirageWorlds(mirageCount);
-                for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
-                    this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(this.getWorld()));
+                synchronized (this.mirageWorlds) {
+                    resetMirageWorlds(mirageCount);
+                    for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
+                        this.mirageWorlds.put(mirageWorldIndex, new MirageWorld(getWorld(), this, mirageWorldIndex));
+                    }
                 }
+
                 for (int mirageWorldIndex = 0; mirageWorldIndex < mirageCount; mirageWorldIndex++) {
                     //freeMirageWorldMemory(mirageCount);
                     PacketByteBuf message = PacketByteBufs.create();
-                    message.writeBlockPos(getPos());
+                    message.writeInt(getPhoneBookIndex());
                     message.writeString(getFileNames().get(mirageWorldIndex));
                     message.writeInt(mirageWorldIndex);
                     message.writeCollection(new ArrayList<>(), PacketByteBuf::writeInt);
@@ -219,7 +250,7 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
                 }
                 if(fragmentIdx == totalFragments-1){
                     PacketByteBuf message = PacketByteBufs.create();
-                    message.writeBlockPos(getPos());
+                    message.writeInt(getPhoneBookIndex());
                     message.writeString(getFileNames().get(mirageWorldIndex));
                     message.writeInt(mirageWorldIndex);
                     message.writeCollection(mirageWorld.getMirageFragmentCheckList(), PacketByteBuf::writeInt);
@@ -264,7 +295,9 @@ public class MirageBlockEntity extends BlockEntity implements GeoBlockEntity {
     @Override
     public void setWorld(World world) {
         super.setWorld(world);
-        this.mirageWorlds = new ConcurrentHashMap<>();
+        if(getWorld().isClient()) {
+            Mirage.addToBlockEntityPhoneBook(this);
+        }
     }
 
 
