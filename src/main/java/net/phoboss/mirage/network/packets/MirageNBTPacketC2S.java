@@ -97,7 +97,7 @@ public class MirageNBTPacketC2S {
                                 }
                                 CompoundTag splitStructureNBT = splitStructureNBTList.get(fragmentIdx);
 
-                                MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(phoneBookIdx, mirageWorldIdx, fragmentIdx, totalFragments, false, splitStructureNBT),player);
+                                MirageNBTPacketHandler.sendToPlayer(new MirageNBTPacketS2C(phoneBookIdx, mirageWorldIdx, fragmentIdx, totalFragments, splitStructureNBT),player);
                             }
 
 
