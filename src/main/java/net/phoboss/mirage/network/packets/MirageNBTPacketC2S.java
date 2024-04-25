@@ -4,7 +4,7 @@ package net.phoboss.mirage.network.packets;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
+
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
@@ -26,7 +26,7 @@ import java.util.List;
 public class MirageNBTPacketC2S {
 
     public static void receive(MinecraftServer server, ServerPlayerEntity player, ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender){
-        BlockPos mirageBlockEntityPos = buf.readBlockPos();
+        int phoneBookIdx = buf.readInt();
         String fileName = buf.readString();
         int mirageWorldIndex = buf.readInt();
         List<Integer> mirageFragmentCheckList = buf.readCollection(c -> new ArrayList<>(), PacketByteBuf::readInt);
@@ -34,14 +34,8 @@ public class MirageNBTPacketC2S {
         if(player.isDisconnected()){
             return;
         }
-        ServerWorld level = player.getWorld();
 
         try {
-            BlockState blockState = level.getBlockState(mirageBlockEntityPos);
-            if(!(blockState.getBlock() instanceof MirageBlock)){
-                player.sendMessage(new LiteralText("Mirage Projector Not Found"), false);
-                throw new Exception("Mirage Projector Not Found");
-            }
 
                     /*
                     MirageBlockEntity mirageBlockEntity = (MirageBlockEntity) be;
@@ -61,7 +55,7 @@ public class MirageNBTPacketC2S {
                         NbtCompound splitStructureNBT = splitStructureNBTList.get(fragmentIdx);
 
                         PacketByteBuf message = PacketByteBufs.create();
-                        message.writeBlockPos(mirageBlockEntityPos);
+                        message.writeInt(phoneBookIdx);
                         message.writeInt(mirageWorldIndex);
                         message.writeInt(fragmentIdx);
                         message.writeInt(totalFragments);
@@ -70,7 +64,7 @@ public class MirageNBTPacketC2S {
                     }
 
 
-                    Mirage.LOGGER.info("Mirage File: "+fileName+" totalFragments:"+totalFragments+" MirageProjector: "+mirageBlockEntityPos + " For Client: "+player.getName());
+                    Mirage.LOGGER.info("Mirage File: " + fileName + " totalFragments:" + totalFragments + " For Client: "+player.getName());
                 }catch (Exception e){
                     Mirage.LOGGER.error("Error on MirageLoader Thread: ",e);
                 }

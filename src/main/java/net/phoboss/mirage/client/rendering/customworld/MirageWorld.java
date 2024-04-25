@@ -54,14 +54,16 @@ import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.tick.QueryableTickScheduler;
 import net.phoboss.decobeacons.blocks.decobeacon.DecoBeaconBlock;
 import net.phoboss.mirage.Mirage;
+import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
+
 public class MirageWorld extends World implements ServerWorldAccess {
-    public MirageWorld(World world) {
+    public MirageWorld(World world, MirageBlockEntity mirageBlockEntity, int mirageWorldIndex) {
         super((MutableWorldProperties) world.getLevelProperties(),
                 world.getRegistryKey(),
                 world.method_40134(),
@@ -81,6 +83,9 @@ public class MirageWorld extends World implements ServerWorldAccess {
         setChunkManager(new MirageChunkManager(this));
 
         this.mirageBufferStorage = new MirageBufferStorage();
+
+        this.parentMirageBlockEntity = mirageBlockEntity;
+        this.mirageWorldIndex = mirageWorldIndex;
     }
     public static MinecraftClient mc = MinecraftClient.getInstance();
     public static BlockRenderManager blockRenderManager = mc.getBlockRenderManager();
@@ -184,50 +189,50 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public void render(BlockPos projectorPos,float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay){
-        try {
-        refreshVertexBuffersIfNeeded(projectorPos,this);
+        try{
+            refreshVertexBuffersIfNeeded(projectorPos, this);
 
-        for(Map.Entry<Long, StateNEntity> entry : this.manualEntityRenderList.entrySet()){
-            Entity fakeEntity = entry.getValue().entity;
-            matrices.push();
-            Vec3d entityPos = fakeEntity.getPos().subtract(new Vec3d(projectorPos.getX(), projectorPos.getY(), projectorPos.getZ()));
-            matrices.translate(entityPos.getX(), entityPos.getY(), entityPos.getZ());
-            try{
-                renderMirageEntity(fakeEntity, 0, matrices, vertexConsumers);
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageEntity(...), removing entry from this.manualEntityRenderList",e);
-                this.manualEntityRenderList.remove(entry.getKey());
+            for (Map.Entry<Long, StateNEntity> entry : this.manualEntityRenderList.entrySet()) {
+                Entity fakeEntity = entry.getValue().entity;
+                matrices.push();
+                Vec3d entityPos = fakeEntity.getPos().subtract(new Vec3d(projectorPos.getX(), projectorPos.getY(), projectorPos.getZ()));
+                matrices.translate(entityPos.getX(), entityPos.getY(), entityPos.getZ());
+                try {
+                    renderMirageEntity(fakeEntity, 0, matrices, vertexConsumers);
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in renderMirageEntity(...), removing entry from this.manualEntityRenderList", e);
+                    this.manualEntityRenderList.remove(entry.getKey());
+                }
+                matrices.pop();
             }
-            matrices.pop();
-        }
 
-        for(Map.Entry<Long, StateNEntity> entry : this.manualBlocksList.entrySet()){//need to render multi-model-layered translucent blocks (i.e. slime, honey, DecoBeacons etc) manually :(
-            matrices.push();
-            BlockPos fakeBlockPos = BlockPos.fromLong(entry.getKey());
-            BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
-            matrices.translate(relativePos.getX(),relativePos.getY(),relativePos.getZ());
-            try{
-                renderMirageBlock(entry.getValue().blockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom());
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageBlock(...), removing entry from this.manualBlocksList",e);
-                this.manualBlocksList.remove(entry.getKey());
+            for (Map.Entry<Long, StateNEntity> entry : this.manualBlocksList.entrySet()) {//need to render multi-model-layered translucent blocks (i.e. slime, honey, DecoBeacons etc) manually :(
+                matrices.push();
+                BlockPos fakeBlockPos = BlockPos.fromLong(entry.getKey());
+                BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
+                matrices.translate(relativePos.getX(), relativePos.getY(), relativePos.getZ());
+                try {
+                    renderMirageBlock(entry.getValue().blockState, fakeBlockPos, this, matrices, vertexConsumers, true, getRandom());
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in renderMirageBlock(...), removing entry from this.manualBlocksList", e);
+                    this.manualBlocksList.remove(entry.getKey());
+                }
+                matrices.pop();
             }
-            matrices.pop();
-        }
 
-        for (Map.Entry<Long,BlockWEntity> entry : this.bERBlocksList.entrySet()){//animated blocks (enchanting table...)
-            matrices.push();
-            BlockPos fakeBlockPos = BlockPos.fromLong(entry.getKey());
-            BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
-            matrices.translate(relativePos.getX(),relativePos.getY(),relativePos.getZ());
-            try {
-                renderMirageBlockEntity(entry.getValue().blockEntity, tickDelta, matrices, vertexConsumers);
-            }catch (Exception e){
-                Mirage.LOGGER.error("Error in renderMirageBlockEntity(...), removing entry from this.bERBlocksList",e);
-                this.bERBlocksList.remove(entry.getKey());
+            for (Map.Entry<Long, BlockWEntity> entry : this.bERBlocksList.entrySet()) {//animated blocks (enchanting table...)
+                matrices.push();
+                BlockPos fakeBlockPos = BlockPos.fromLong(entry.getKey());
+                BlockPos relativePos = fakeBlockPos.subtract(projectorPos);
+                matrices.translate(relativePos.getX(), relativePos.getY(), relativePos.getZ());
+                try {
+                    renderMirageBlockEntity(entry.getValue().blockEntity, tickDelta, matrices, vertexConsumers);
+                } catch (Exception e) {
+                    Mirage.LOGGER.error("Error in renderMirageBlockEntity(...), removing entry from this.bERBlocksList", e);
+                    this.bERBlocksList.remove(entry.getKey());
+                }
+                matrices.pop();
             }
-            matrices.pop();
-        }
 
         Matrix4f matrixView = RenderSystem.getModelViewMatrix().copy();
         matrixView.multiply(matrices.peek().getPositionMatrix().copy());
@@ -245,7 +250,7 @@ public class MirageWorld extends World implements ServerWorldAccess {
             renderLayer.endDrawing();
         }
 
-        markAnimatedSprite(this.animatedSprites);
+            markAnimatedSprite(this.animatedSprites);
         }catch(Exception e){
             Mirage.LOGGER.error("Error in MirageWorld.render(...)", e);
         }
@@ -421,6 +426,14 @@ public class MirageWorld extends World implements ServerWorldAccess {
     }
 
     public void clearMirageStateNEntities(){
+        this.mirageStateNEntities.forEach((key,stateNEntity)->{
+            if(stateNEntity.blockEntity instanceof MirageBlockEntity mbe){
+                synchronized (Mirage.CLIENT_MIRAGE_PROJECTOR_PHONE_BOOK) {
+                    Mirage.removeFromBlockEntityPhoneBook(mbe);
+                }
+                mbe.resetMirageWorlds();
+            }
+        });
         this.mirageStateNEntities.clear();
     }
 
@@ -641,8 +654,18 @@ public class MirageWorld extends World implements ServerWorldAccess {
         entity.streamSelfAndPassengers().forEach(this::spawnEntity);
     }
 
+    public MirageBlockEntity parentMirageBlockEntity;
+    public int mirageWorldIndex;
+    public MirageBlockEntity getParentMirageBlockEntity() {
+        return parentMirageBlockEntity;
+    }
+
+
     @Override
     public void addBlockEntity(BlockEntity blockEntity) {
+        if(blockEntity instanceof MirageBlockEntity mbe){
+            mbe.setRecursionLevel(getParentMirageBlockEntity().getRecursionLevel()+1);
+        }
         BlockPos pos = blockEntity.getPos();
         blockEntity.setWorld(this);//needs to be done AFTER setBlockState(...) here to properly initialize FramedBlockEntity ModelData
         setMirageBlockEntity(pos,blockEntity);

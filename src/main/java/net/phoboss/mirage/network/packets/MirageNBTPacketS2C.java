@@ -17,20 +17,22 @@ import net.phoboss.mirage.blocks.mirageprojector.MirageBlockEntity;
 public class MirageNBTPacketS2C {
 
     public static void receive(MinecraftClient minecraftClient, ClientPlayNetworkHandler clientPlayNetworkHandler, PacketByteBuf message, PacketSender packetSender) {
-        BlockPos mirageBlockEntityPos = message.readBlockPos();
+        int phoneBookIdx = message.readInt();
         int mirageWorldIndex = message.readInt();
         int fragmentIdx = message.readInt();
         int totalFragments = message.readInt();
         NbtCompound nbtMirageFragment = message.readNbt();
 
 
-        BlockEntity be = minecraftClient.world.getBlockEntity(mirageBlockEntityPos);
-        if(be instanceof MirageBlockEntity mbe){
-            try {
-                mbe.uploadMirageFragment(mirageWorldIndex,fragmentIdx,totalFragments,nbtMirageFragment);
-            } catch (Exception e) {
-                Mirage.LOGGER.error("Error on uploading Mirage: "+mbe.getFileNames().get(mirageWorldIndex)+" Fragment: "+fragmentIdx,e);
-            }
+        MirageBlockEntity mirageBlockEntity = Mirage.getBlockEntityPhoneBook(phoneBookIdx);
+        if(mirageBlockEntity == null){
+            return;
         }
+            try {
+                mirageBlockEntity.uploadMirageFragment(mirageWorldIndex,fragmentIdx,totalFragments,nbtMirageFragment);
+            } catch (Exception e) {
+                Mirage.LOGGER.error("Error on uploading Mirage: "+mirageBlockEntity.getFileNames().get(mirageWorldIndex)+" Fragment: "+fragmentIdx,e);
+            }
+
     }
 }

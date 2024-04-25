@@ -56,6 +56,7 @@ public class MirageBlock extends BlockWithEntity implements BlockEntityProvider,
             MirageBlockEntity blockEntity = (MirageBlockEntity) world.getBlockEntity(pos);
             blockEntity.stopMirageLoader();
             blockEntity.resetMirageWorlds();
+            blockEntity.unregisterFromPhoneBook();
         }
         //System.gc();
     }

@@ -235,6 +235,10 @@ public class MirageStructure extends Structure {
                 splitStructureNBTList.add(fragmentStructureNBT.copy());
             }
 
+            if(entitiesNBT.isEmpty()){
+                return splitStructureNBTList;
+            }
+
             for (int i = 0; i < entitiesNBT.size(); ++i) {
                 NbtCompound entity = entitiesNBT.getCompound(i);
                 fragmentEntities.add(entity);
@@ -251,13 +255,10 @@ public class MirageStructure extends Structure {
                     fragmentBlocks = new NbtList();
                 }
             }
+            splitStructureNBTList.add(fragmentStructureNBT.copy());
         }catch (Exception e){
             Mirage.LOGGER.error("Error while fragmenting NBT",e);
         }
-
-
-
-        splitStructureNBTList.add(fragmentStructureNBT.copy());
 
         return splitStructureNBTList;
     }
