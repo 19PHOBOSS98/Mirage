@@ -62,14 +62,14 @@ dependencies {
 
 	modCompileOnlyApi "net.phoboss:decobeacons:0.0.1-1.20.1-Fabric"
 
-	modRuntimeOnly "maven.modrinth:iris:1.6.16+1.20.1"
-	modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.8"
+	//modRuntimeOnly "maven.modrinth:iris:1.6.16+1.20.1"
+	//modRuntimeOnly "maven.modrinth:sodium:mc1.20.1-0.5.8"
 
 	modRuntimeOnly "net.phoboss:decobeacons:0.0.1-1.20.1-Fabric"
 
 	modRuntimeOnly "maven.modrinth:open-simple-frames:1.2.0" //https://modrinth.com/mod/open-simple-frames/version/RbIlcuU7
 
-	modRuntimeOnly "maven.modrinth:modmenu:7.2.2" //https://modrinth.com/mod/modmenu/version/3.2.5
+	//modRuntimeOnly "maven.modrinth:modmenu:7.2.2" //https://modrinth.com/mod/modmenu/version/3.2.5
 
 }
 
