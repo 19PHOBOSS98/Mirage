@@ -56,13 +56,6 @@ public class MirageNBTPacketHandler {
     public static <MSG> void sendToPlayer(MSG message, ServerPlayer player){
         INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), message);
     }
-
-    public static <MSG> void splitAndSendToPlayer(MSG message, ServerPlayer player){
-        Packet packet = INSTANCE.toVanillaPacket(message, NetworkDirection.PLAY_TO_CLIENT);
-        List<Packet<?>> splitPackets = new ArrayList<Packet<?>>();
-        VanillaPacketSplitter.appendPackets(ConnectionProtocol.PLAY, PacketFlow.CLIENTBOUND, packet, splitPackets);
-        splitPackets.forEach(player.connection::send);
-    }
 }
 
 
