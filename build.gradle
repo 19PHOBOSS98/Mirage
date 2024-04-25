@@ -62,7 +62,7 @@ dependencies {
 
 	modRuntimeOnly "maven.modrinth:nELKzJ5C:Kx0HSnnF" //https://modrinth.com/mod/open-simple-frames/version/RbIlcuU7
 
-	modRuntimeOnly "maven.modrinth:mOgUt4GM:gSoPJyVn" //https://modrinth.com/mod/modmenu/version/3.2.5
+	//modRuntimeOnly "maven.modrinth:mOgUt4GM:gSoPJyVn" //https://modrinth.com/mod/modmenu/version/3.2.5
 
 }
 
