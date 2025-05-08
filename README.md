@@ -34,7 +34,7 @@
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/13752a40-b78b-4fd7-8433-c0f8ebf0710f" alt="divider180"></picture>
   
   <h3>ABOUT</h3>
-  <p>Mirage allows you to project and animate (in real time) noncollidable minecraft structures</p>
+  <p>Mirage allows you to project and animate (in real time) noncollidable minecraft structures </br>(holograms)</p>
   <picture><img src="https://github.com/19PHOBOSS98/Mirage/assets/37253663/dd711759-589a-4317-a82f-671ab45baf45" alt="divider"></picture>
 </div>
 
